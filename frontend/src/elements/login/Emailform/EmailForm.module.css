@@ -1,0 +1,76 @@
+/* Email Form Specific Styles */
+.emailFormContainer {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  max-width:fit-content;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+}
+
+.emailFormContainer h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.emailFormGroup {
+  margin-bottom: 1.5rem;
+}
+
+.emailFormGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.emailFormGroup input {
+  /* width: 100%; */
+  padding: 0.875rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background-color: #f8f9fa;
+}
+
+.emailFormGroup input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+/* Dark Mode Styles */
+:global(.dark-mode) .emailFormContainer {
+  background: #2d3748;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+:global(.dark-mode) .emailFormContainer h2 {
+  color: #e2e8f0;
+}
+
+:global(.dark-mode) .emailFormGroup label {
+  color: #e2e8f0;
+}
+
+:global(.dark-mode) .emailFormGroup input {
+  background-color: #4a5568;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .emailFormContainer {
+    padding: 1.5rem;
+  }
+  
+  .emailFormContainer h2 {
+    font-size: 1.5rem;
+  }
+}

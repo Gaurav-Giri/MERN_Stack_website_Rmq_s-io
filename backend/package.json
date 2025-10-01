@@ -1,0 +1,42 @@
+{
+  "name": "school-lunchbox-backend",
+  "version": "1.0.0",
+  "description": "Backend for School Lunchbox app with Gmail OTP authentication (Node.js, Express, MongoDB).",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.18.0",
+    "morgan": "^1.10.0",
+    "nodemailer": "^7.0.5",
+    "socket.io": "4.8.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.34.0",
+    "nodemon": "^3.1.10"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "mern",
+    "express",
+    "mongodb",
+    "nodemailer",
+    "otp-auth",
+    "backend"
+  ],
+  "author": "Mr.anonymous",
+  "license": "MIT"
+}

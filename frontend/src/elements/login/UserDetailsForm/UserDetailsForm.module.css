@@ -1,0 +1,116 @@
+/* User Details Form Specific Styles */
+.userDetailsContainer {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  max-width: 450px;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+}
+
+.userDetailsContainer h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.userDetailsFormGroup {
+  margin-bottom: 1.5rem;
+}
+
+.userDetailsFormGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.userDetailsFormGroup input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background-color: #f8f9fa;
+}
+
+.userDetailsFormGroup input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.userDetailsFormGroup input:disabled {
+  background-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.saveButton {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.saveButton:hover:not(:disabled) {
+  background-color: #219653;
+  transform: translateY(-1px);
+}
+
+.saveButton:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Dark Mode Styles */
+:global(.dark-mode) .userDetailsContainer {
+  background: #2d3748;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+:global(.dark-mode) .userDetailsContainer h2 {
+  color: #e2e8f0;
+}
+
+:global(.dark-mode) .userDetailsFormGroup label {
+  color: #e2e8f0;
+}
+
+:global(.dark-mode) .userDetailsFormGroup input {
+  background-color: #4a5568;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
+
+:global(.dark-mode) .userDetailsFormGroup input:disabled {
+  background-color: #3a3f46;
+  color: #a0aec0;
+}
+
+:global(.dark-mode) .saveButton:disabled {
+  background-color: #4a5568;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .userDetailsContainer {
+    padding: 1.5rem;
+  }
+  
+  .userDetailsContainer h2 {
+    font-size: 1.5rem;
+  }
+}

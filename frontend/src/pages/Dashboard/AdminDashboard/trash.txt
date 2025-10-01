@@ -1,0 +1,3242 @@
+
+
+
+// import React, { useState, useEffect } from 'react';
+// import { useThemeTrigger } from '../../../ThemeTrigger';
+// import * as SchoolApi from '../../../API/School_api';
+// import * as UserApi from '../../../API/UserApi';
+// import * as MealApi from '../../../API/MealApi';
+// import { useSocket } from '../../../SocketContext'; // Import Socket context
+// import styles from './AdminDashboardPage.module.css';
+
+// const AdminDashboardPage = () => {
+//   const { darkMode, toggleTheme } = useThemeTrigger();
+//   const [activeTab, setActiveTab] = useState('overview');
+//   const [schools, setSchools] = useState([]);//for meals
+//   const [stats, setStats] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [users, setUsers] = useState([]);
+//   const [userStats, setUserStats] = useState(null);
+//   const [meals, setMeals] = useState([]); // New state for meals
+//   const [mealStats, setMealStats] = useState(null); // New state for meal stats
+//   const [editingMeal, setEditingMeal] = useState(null); // New state for editing meal
+//   const [showMealForm, setShowMealForm] = useState(false); // New state for meal form
+//   const [editingSchool, setEditingSchool] = useState(null);
+//   const [showSchoolForm, setShowSchoolForm] = useState(false);
+//   const [editingUser, setEditingUser] = useState(null);
+//   const [showUserForm, setShowUserForm] = useState(false);
+//   const [error, setError] = useState('');
+//   const [formData, setFormData] = useState({
+//     name: '',
+//     location: '',
+//     type: 'Public',
+//     mealOptions: 0,
+//     image: ''
+//   });
+//   const [userFormData, setUserFormData] = useState({
+//     name: '',
+//     email: '',
+//     phone: '',
+//     A: '',
+//     B: '',
+//     C: '',
+//     role:''
+//   });
+
+//   const [mealFormData, setMealFormData] = useState({ // New state for meal form data
+//     name: '',
+//     image: '',
+//     description: '',
+//     nutrition: {
+//       calories: 0,
+//       protein: 0,
+//       carbs: 0,
+//       fat: 0
+//     },
+//     allergens: [],
+//     price: 0,
+//     category: 'non-vegetarian',
+//     preparationTime: 30,
+//     isAvailable: true
+//   });
+  
+//   // Get socket instance
+//   const socket = useSocket();
+//   const [notifications, setNotifications] = useState([]);
+//   const [onlineAdmins, setOnlineAdmins] = useState([]);
+
+//   useEffect(() => {
+//     fetchData();
+    
+//     // Set up socket listeners if socket is available
+//     if (socket) {
+//       // Listen for real-time school updates
+//       socket.on('school-updated', (updatedSchool) => {
+//         setSchools(prev => prev.map(school => 
+//           school._id === updatedSchool._id ? updatedSchool : school
+//         ));
+//         addNotification(`School "${updatedSchool.name}" was updated by another admin`);
+//       });
+      
+//       socket.on('school-created', (newSchool) => {
+//         setSchools(prev => [...prev, newSchool]);
+//         addNotification(`New school "${newSchool.name}" was created by another admin`);
+//       });
+      
+//       socket.on('school-deleted', (deletedSchoolId) => {
+//         setSchools(prev => prev.filter(school => school._id !== deletedSchoolId));
+//         addNotification('A school was deleted by another admin');
+//       });
+      
+//       // Listen for real-time user updates
+//       socket.on('user-updated', (updatedUser) => {
+//         setUsers(prev => prev.map(user => 
+//           user._id === updatedUser._id ? updatedUser : user
+//         ));
+//         addNotification(`User "${updatedUser.name}" was updated by another admin`);
+//       });
+      
+//       socket.on('user-deleted', (deletedUserId) => {
+//         setUsers(prev => prev.filter(user => user._id !== deletedUserId));
+//         addNotification('A user was deleted by another admin');
+//       });
+
+//       // New socket listeners for meals
+//       socket.on('meal-updated', (updatedMeal) => {
+//         setMeals(prev => prev.map(meal => 
+//           meal._id === updatedMeal._id ? updatedMeal : meal
+//         ));
+//         addNotification(`Meal "${updatedMeal.name}" was updated by another admin`);
+//       });
+//       socket.on('meal-created', (newMeal) => {
+//         setMeals(prev => [...prev, newMeal]);
+//         addNotification(`New meal "${newMeal.name}" was created by another admin`);
+//       });
+//       socket.on('meal-deleted', (deletedMealId) => {
+//         setMeals(prev => prev.filter(meal => meal._id !== deletedMealId));
+//         addNotification('A meal was deleted by another admin');
+//       });
+//       socket.on('meal-availability-toggled', (updatedMeal) => {
+//         setMeals(prev => prev.map(meal => 
+//           meal._id === updatedMeal._id ? updatedMeal : meal
+//         ));
+//         addNotification(`Meal "${updatedMeal.name}" availability was toggled by another admin`);
+//       });
+            
+//       // Listen for admin online status
+//       socket.on('admin-online', (adminData) => {
+//         setOnlineAdmins(prev => {
+//           if (!prev.find(admin => admin.id === adminData.id)) {
+//             return [...prev, adminData];
+//           }
+//           return prev;
+//         });
+//       });
+      
+//       socket.on('admin-offline', (adminId) => {
+//         setOnlineAdmins(prev => prev.filter(admin => admin.id !== adminId));
+//       });
+      
+//       socket.on('online-admins', (admins) => {
+//         setOnlineAdmins(admins);
+//       });
+      
+//       // Join admin room
+//       socket.emit('join-admin-room');
+      
+//       // Clean up listeners on unmount
+//       return () => {
+//         socket.off('school-updated');
+//         socket.off('school-created');
+//         socket.off('school-deleted');
+//         socket.off('user-updated');
+//         socket.off('user-deleted');
+//         socket.off('meal-updated');
+//         socket.off('meal-created');
+//         socket.off('meal-deleted');
+//         socket.off('meal-availability-toggled');
+//         socket.off('admin-online');
+//         socket.off('admin-offline');
+//         socket.off('online-admins');
+//       };
+//     }
+//   }, [socket]);
+
+//   useEffect(() => {
+//     if (activeTab === 'users') {
+//       fetchUserData();
+//     } else if (activeTab === 'meals') {
+//       fetchMealData();
+//     }
+//   }, [activeTab]);
+
+//   const fetchData = async () => {
+//     try {
+//       setLoading(true);
+//       setError('');
+//       const [schoolsResponse, statsResponse] = await Promise.all([
+//         SchoolApi.getSchools(),
+//         SchoolApi.getSchoolStats()
+//       ]);
+//       setSchools(schoolsResponse.data || []);
+//       setStats(statsResponse.data);
+//     } catch (error) {
+//       console.error('Error fetching data:', error);
+//       setError('Failed to fetch data: ' + (error.message || 'Please check your connection'));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const fetchUserData = async () => {
+//     try {
+//       setError('');
+//       const [usersResponse, userStatsResponse] = await Promise.all([
+//         UserApi.getUsers(),
+//         UserApi.getUserStats()
+//       ]);
+//       setUsers(usersResponse.data || []);
+//       setUserStats(userStatsResponse.data);
+//     } catch (error) {
+//       console.error('Error fetching user data:', error);
+//       setError('Failed to fetch user data: ' + (error.message || 'Please check your connection'));
+//     }
+//   };
+
+//   const fetchMealData = async () => {
+//     try {
+//       setError('');
+//       const [mealsResponse, mealStatsResponse] = await Promise.all([
+//         MealApi.getMeals(),
+//         MealApi.getMealStats()
+//       ]);
+//       setMeals(mealsResponse.data || []);
+//       setMealStats(mealStatsResponse.data);
+//     } catch (error) {
+//       console.error('Error fetching meal data:', error);
+//       setError('Failed to fetch meal data: ' + (error.message || 'Please check your connection'));
+//     }
+//   };
+
+//   const addNotification = (message) => {
+//     const newNotification = {
+//       id: Date.now(),
+//       message,
+//       timestamp: new Date(),
+//       type: 'info'
+//     };
+    
+//     setNotifications(prev => [newNotification, ...prev.slice(0, 4)]); // Keep only 5 latest
+    
+//     // Auto-remove after 5 seconds
+//     setTimeout(() => {
+//       setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
+//     }, 5000);
+//   };
+
+//   const handleInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({
+//       ...prev,
+//       [name]: value
+//     }));
+//   };
+
+//   const handleUserInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setUserFormData(prev => ({
+//       ...prev,
+//       [name]: value
+//     }));
+//   };
+
+//   const handleMealInputChange = (e) => {
+//     const { name, value } = e.target;
+//     if (name.startsWith('nutrition.')) {
+//       const nutritionField = name.split('.')[1];
+//       setMealFormData(prev => ({
+//         ...prev,
+//         nutrition: {
+//           ...prev.nutrition,
+//           [nutritionField]: parseFloat(value) || 0
+//         }
+//       }));
+//     } else {
+//       setMealFormData(prev => ({
+//         ...prev,
+//         [name]: name === 'price' || name === 'preparationTime' ? parseFloat(value) || 0 : value
+//       }));
+//     }
+//   };
+//   const handleAllergenChange = (e) => {
+//     const { value, checked } = e.target;
+//     setMealFormData(prev => ({
+//       ...prev,
+//       allergens: checked 
+//         ? [...prev.allergens, value]
+//         : prev.allergens.filter(allergen => allergen !== value)
+//     }));
+//   };
+
+//   const handleSubmitSchool = async (e) => {
+//     e.preventDefault();
+//     try {
+//       setError('');
+//       let response;
+      
+//       if (editingSchool) {
+//         response = await SchoolApi.updateSchool(editingSchool._id, formData);
+//         alert('School updated successfully!');
+        
+//         // Emit socket event for real-time update
+//         if (socket) {
+//           socket.emit('school-update', response.data);
+//         }
+//       } else {
+//         response = await SchoolApi.createSchool(formData);
+//         alert('School created successfully!');
+        
+//         // Emit socket event for real-time update
+//         if (socket) {
+//           socket.emit('school-create', response.data);
+//         }
+//       }
+      
+//       setShowSchoolForm(false);
+//       setEditingSchool(null);
+//       setFormData({
+//         name: '',
+//         location: '',
+//         type: 'Public',
+//         mealOptions: 0,
+//         image: ''
+//       });
+//       fetchData();
+//     } catch (error) {
+//       console.error('Error saving school:', error);
+//       setError('Failed to save school: ' + (error.message || 'Please check your input'));
+//     }
+//   };
+
+//     // New meal submit handler
+//   const handleSubmitMeal = async (e) => {
+//     e.preventDefault();
+//     try {
+//       setError('');
+//       let response;
+      
+//       if (editingMeal) {
+//         response = await MealApi.updateMeal(editingMeal._id, mealFormData);
+//         alert('Meal updated successfully!');
+//         if (socket) socket.emit('meal-update', response.data);
+//       } else {
+//         response = await MealApi.createMeal(mealFormData);
+//         alert('Meal created successfully!');
+//         if (socket) socket.emit('meal-create', response.data);
+//       }
+      
+//       setShowMealForm(false);
+//       setEditingMeal(null);
+//       setMealFormData({
+//         name: '',
+//         image: '',
+//         description: '',
+//         nutrition: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+//         allergens: [],
+//         price: 0,
+//         category: 'non-vegetarian',
+//         preparationTime: 30,
+//         isAvailable: true
+//       });
+//       fetchMealData();
+//     } catch (error) {
+//       console.error('Error saving meal:', error);
+//       setError('Failed to save meal: ' + (error.message || 'Please check your input'));
+//     }
+//   };
+
+//   const handleSubmitUser = async (e) => {
+//     e.preventDefault();
+//     try {
+//       setError('');
+//       let response;
+      
+//       if (editingUser) {
+//         response = await UserApi.updateUser(editingUser.email, userFormData);
+//         alert('User updated successfully!');
+        
+//         // Emit socket event for real-time update
+//         if (socket) {
+//           socket.emit('user-update', response.data);
+//         }
+//       }
+      
+//       setShowUserForm(false);
+//       setEditingUser(null);
+//       setUserFormData({
+//         name: '',
+//         email: '',
+//         phone: '',
+//         A: '',
+//         B: '',
+//         C: '',
+//         role:''
+//       });
+//       fetchUserData();
+//     } catch (error) {
+//       console.error('Error saving user:', error);
+//       setError('Failed to save user: ' + (error.message || 'Please check your input'));
+//     }
+//   };
+
+
+//   // New meal edit handler
+//   const handleEditMeal = (meal) => {
+//     setEditingMeal(meal);
+//     setMealFormData({
+//       name: meal.name,
+//       image: meal.image,
+//       description: meal.description,
+//       nutrition: meal.nutrition,
+//       allergens: meal.allergens || [],
+//       price: meal.price,
+//       category: meal.category,
+//       preparationTime: meal.preparationTime,
+//       isAvailable: meal.isAvailable
+//     });
+//     setShowMealForm(true);
+//   };
+
+
+
+//   const handleEditSchool = (school) => {
+//     setEditingSchool(school);
+//     setFormData({
+//       name: school.name,
+//       location: school.location,
+//       type: school.type,
+//       mealOptions: school.mealOptions,
+//       image: school.image
+//     });
+//     setShowSchoolForm(true);
+//   };
+
+//   const handleEditUser = (user) => {
+//     setEditingUser(user);
+//     setUserFormData({
+//       name: user.name || '',
+//       email: user.email || '',
+//       phone: user.phone || '',
+//       A: user.A || '',
+//       B: user.B || '',
+//       C: user.C || '',
+//       role: user.role || ''
+//     });
+//     setShowUserForm(true);
+//   };
+
+//   const handleDeleteSchool = async (id) => {
+//     if (window.confirm('Are you sure you want to delete this school?')) {
+//       try {
+//         setError('');
+//         const schoolToDelete = schools.find(s => s._id === id);
+//         await SchoolApi.deleteSchool(id);
+//         alert('School deleted successfully!');
+        
+//         // Emit socket event for real-time update
+//         if (socket) {
+//           socket.emit('school-delete', id);
+//         }
+        
+//         fetchData();
+//       } catch (error) {
+//         console.error('Error deleting school:', error);
+//         setError('Failed to delete school: ' + (error.message || 'Invalid school ID'));
+//       }
+//     }
+//   };
+
+//   // New meal delete handler
+//   const handleDeleteMeal = async (id) => {
+//     if (window.confirm('Are you sure you want to delete this meal?')) {
+//       try {
+//         setError('');
+//         await MealApi.deleteMeal(id);
+//         alert('Meal deleted successfully!');
+//         if (socket) socket.emit('meal-delete', id);
+//         fetchMealData();
+//       } catch (error) {
+//         console.error('Error deleting meal:', error);
+//         setError('Failed to delete meal: ' + (error.message || 'Invalid meal ID'));
+//       }
+//     }
+//   };
+
+//   // New meal availability toggle handler
+//   const handleToggleMealAvailability = async (meal) => {
+//     try {
+//       setError('');
+//       const response = await MealApi.toggleMealAvailability(meal._id, !meal.isAvailable);
+//       alert(`Meal ${meal.isAvailable ? 'disabled' : 'enabled'} successfully!`);
+//       if (socket) socket.emit('meal-toggle-availability', meal._id);
+//       fetchMealData();
+//     } catch (error) {
+//       console.error('Error toggling meal availability:', error);
+//       setError('Failed to toggle meal availability: ' + error.message);
+//     }
+//   };
+
+//   const handleDeleteUser = async (email) => {
+//     if (window.confirm('Are you sure you want to delete this user?')) {
+//       try {
+//         setError('');
+//         const userToDelete = users.find(u => u.email === email);
+//         await UserApi.deleteUser(email);
+//         alert('User deleted successfully!');
+        
+//         // Emit socket event for real-time update
+//         if (socket && userToDelete) {
+//           socket.emit('user-delete', userToDelete._id);
+//         }
+        
+//         fetchUserData();
+//       } catch (error) {
+//         console.error('Error deleting user:', error);
+//         setError('Failed to delete user: ' + (error.message || 'Invalid user email'));
+//       }
+//     }
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className={`${styles.adminDashboard} ${darkMode ? styles.dark : styles.light}`}>
+//         <div className={styles.loading}>Loading...</div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className={`${styles.adminDashboard} ${darkMode ? styles.dark : styles.light}`}>
+//       {/* Header */}
+//       <header className={styles.adminHeader}>
+//         <div className={styles.headerLeft}>
+//           <h1>Admin Dashboard</h1>
+//           {socket && (
+//             <div className={styles.connectionStatus}>
+//               <span className={styles.statusIndicator}></span>
+//               Real-time updates enabled
+//             </div>
+//           )}
+//         </div>
+//         <div className={styles.headerRight}>
+//           {onlineAdmins.length > 0 && (
+//             <div className={styles.onlineAdmins}>
+//               <span>{onlineAdmins.length} admin(s) online</span>
+//             </div>
+//           )}
+//         </div>
+//       </header>
+
+//       {/* Notifications */}
+//       {notifications.length > 0 && (
+//         <div className={styles.notificationsContainer}>
+//           {notifications.map(notification => (
+//             <div key={notification.id} className={styles.notification}>
+//               <span>{notification.message}</span>
+//               <button 
+//                 onClick={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))} 
+//                 className={styles.closeNotification}
+//               >
+//                 ×
+//               </button>
+//             </div>
+//           ))}
+//         </div>
+//       )}
+
+//       {/* Error Message */}
+//       {error && (
+//         <div className={styles.errorBanner}>
+//           <span>{error}</span>
+//           <button onClick={() => setError('')} className={styles.closeError}>×</button>
+//         </div>
+//       )}
+
+//       {/* Navigation */}
+//       <nav className={styles.adminNav}>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'overview' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('overview')}
+//         >
+//           Overview
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'schools' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('schools')}
+//         >
+//           Schools
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'meals' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('meals')}
+//         >
+//           Meals
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'users' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('users')}
+//         >
+//           Users
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'settings' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('settings')}
+//         >
+//           Settings
+//         </button>
+//       </nav>
+
+//       {/* Main Content */}
+//       <main className={styles.adminContent}>
+//         {/* Overview Tab */}
+//         {activeTab === 'overview' && (
+//           <div className={styles.overview}>
+//             <h2>Dashboard Overview</h2>
+//             {stats ? (
+//               <div className={styles.statsGrid}>
+//                 <div className={styles.statCard}>
+//                   <h3>Total Schools</h3>
+//                   <p className={styles.statNumber}>{stats.totalSchools}</p>
+//                 </div>
+//                 <div className={styles.statCard}>
+//                   <h3>Total Meal Options</h3>
+//                   <p className={styles.statNumber}>{stats.mealOptions?.totalMealOptions || 0}</p>
+//                 </div>
+//                 <div className={styles.statCard}>
+//                   <h3>Average Meals per School</h3>
+//                   <p className={styles.statNumber}>
+//                     {stats.mealOptions ? Math.round(stats.mealOptions.avgMealOptions) : 0}
+//                   </p>
+//                 </div>
+//                 <div className={styles.statCard}>
+//                   <h3>School Types</h3>
+//                   <div className={styles.typeStats}>
+//                     {stats.schoolsByType?.map(type => (
+//                       <div key={type._id} className={styles.typeStat}>
+//                         <span>{type._id}: </span>
+//                         <strong>{type.count}</strong>
+//                       </div>
+//                     )) || <div>No data available</div>}
+//                   </div>
+//                 </div>
+//               </div>
+//             ) : (
+//               <div className={styles.noData}>No statistics data available</div>
+//             )}
+//           </div>
+//         )}
+
+//         {/* Schools Tab */}
+//         {activeTab === 'schools' && (
+//           <div className={styles.schoolsManagement}>
+//             <div className={styles.sectionHeader}>
+//               <h2>Schools Management</h2>
+//               <button 
+//                 className={styles.addSchoolBtn}
+//                 onClick={() => setShowSchoolForm(true)}
+//               >
+//                 Add New School
+//               </button>
+//             </div>
+
+//             {showSchoolForm && (
+//               <div className={styles.schoolFormModal}>
+//                 <div className={styles.modalContent}>
+//                   <h3>{editingSchool ? 'Edit School' : 'Add New School'}</h3>
+//                   <form onSubmit={handleSubmitSchool}>
+//                     <div className={styles.formGroup}>
+//                       <label>School Name</label>
+//                       <input
+//                         type="text"
+//                         name="name"
+//                         value={formData.name}
+//                         onChange={handleInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Location</label>
+//                       <input
+//                         type="text"
+//                         name="location"
+//                         value={formData.location}
+//                         onChange={handleInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Type</label>
+//                       <select
+//                         name="type"
+//                         value={formData.type}
+//                         onChange={handleInputChange}
+//                         required
+//                       >
+//                         <option value="Public">Public</option>
+//                         <option value="Private">Private</option>
+//                         <option value="International">International</option>
+//                         <option value="Government">Government</option>
+//                       </select>
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Meal Options</label>
+//                       <input
+//                         type="number"
+//                         name="mealOptions"
+//                         value={formData.mealOptions}
+//                         onChange={handleInputChange}
+//                         min="0"
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Image URL</label>
+//                       <input
+//                         type="url"
+//                         name="image"
+//                         value={formData.image}
+//                         onChange={handleInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formActions}>
+//                       <button type="submit">
+//                         {editingSchool ? 'Update' : 'Create'} School
+//                       </button>
+//                       <button 
+//                         type="button" 
+//                         onClick={() => {
+//                           setShowSchoolForm(false);
+//                           setEditingSchool(null);
+//                         }}
+//                       >
+//                         Cancel
+//                       </button>
+//                     </div>
+//                   </form>
+//                 </div>
+//               </div>
+//             )}
+
+//             <div className={styles.schoolsList}>
+//               {schools.length > 0 ? (
+//                 <table className={styles.schoolsTable}>
+//                   <thead>
+//                     <tr>
+//                       <th>Name</th>
+//                       <th>Location</th>
+//                       <th>Type</th>
+//                       <th>Meal Options</th>
+//                       <th>Actions</th>
+//                     </tr>
+//                   </thead>
+//                   <tbody>
+//                     {schools.map(school => (
+//                       <tr key={school._id}>
+//                         <td>{school.name}</td>
+//                         <td>{school.location}</td>
+//                         <td>{school.type}</td>
+//                         <td>{school.mealOptions}</td>
+//                         <td className={styles.actions}>
+//                           <button 
+//                             onClick={() => handleEditSchool(school)}
+//                             className={styles.editBtn}
+//                           >
+//                             Edit
+//                           </button>
+//                           <button 
+//                             onClick={() => handleDeleteSchool(school._id)}
+//                             className={styles.deleteBtn}
+//                           >
+//                             Delete
+//                           </button>
+//                         </td>
+//                       </tr>
+//                     ))}
+//                   </tbody>
+//                 </table>
+//               ) : (
+//                 <div className={styles.noData}>No schools found</div>
+//               )}
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Meals Tab */}
+//         {activeTab === 'meals' && (
+//           <div className={styles.mealsManagement}>
+//             <div className={styles.sectionHeader}>
+//               <h2>Meals Management</h2>
+//               <button 
+//                 className={styles.addMealBtn}
+//                 onClick={() => setShowMealForm(true)}
+//               >
+//                 Add New Meal
+//               </button>
+//             </div>
+
+//             {/* Meal Form Modal */}
+//             {showMealForm && (
+//               <div className={styles.mealFormModal}>
+//                 <div className={styles.modalContent}>
+//                   <h3>{editingMeal ? 'Edit Meal' : 'Add New Meal'}</h3>
+//                   <form onSubmit={handleSubmitMeal}>
+//                     <div className={styles.formGroup}>
+//                       <label>Meal Name</label>
+//                       <input
+//                         type="text"
+//                         name="name"
+//                         value={mealFormData.name}
+//                         onChange={handleMealInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Image URL</label>
+//                       <input
+//                         type="url"
+//                         name="image"
+//                         value={mealFormData.image}
+//                         onChange={handleMealInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Description</label>
+//                       <textarea
+//                         name="description"
+//                         value={mealFormData.description}
+//                         onChange={handleMealInputChange}
+//                         required
+//                         rows="3"
+//                       />
+//                     </div>
+                    
+//                     <div className={styles.nutritionSection}>
+//                       <h4>Nutrition Information</h4>
+//                       <div className={styles.nutritionGrid}>
+//                         <div className={styles.formGroup}>
+//                           <label>Calories</label>
+//                           <input
+//                             type="number"
+//                             name="nutrition.calories"
+//                             value={mealFormData.nutrition.calories}
+//                             onChange={handleMealInputChange}
+//                             min="0"
+//                             required
+//                           />
+//                         </div>
+//                         <div className={styles.formGroup}>
+//                           <label>Protein (g)</label>
+//                           <input
+//                             type="number"
+//                             name="nutrition.protein"
+//                             value={mealFormData.nutrition.protein}
+//                             onChange={handleMealInputChange}
+//                             min="0"
+//                             step="0.1"
+//                             required
+//                           />
+//                         </div>
+//                         <div className={styles.formGroup}>
+//                           <label>Carbs (g)</label>
+//                           <input
+//                             type="number"
+//                             name="nutrition.carbs"
+//                             value={mealFormData.nutrition.carbs}
+//                             onChange={handleMealInputChange}
+//                             min="0"
+//                             step="0.1"
+//                             required
+//                           />
+//                         </div>
+//                         <div className={styles.formGroup}>
+//                           <label>Fat (g)</label>
+//                           <input
+//                             type="number"
+//                             name="nutrition.fat"
+//                             value={mealFormData.nutrition.fat}
+//                             onChange={handleMealInputChange}
+//                             min="0"
+//                             step="0.1"
+//                             required
+//                           />
+//                         </div>
+//                       </div>
+//                     </div>
+
+//                     <div className={styles.formGroup}>
+//                       <label>Price (₹)</label>
+//                       <input
+//                         type="number"
+//                         name="price"
+//                         value={mealFormData.price}
+//                         onChange={handleMealInputChange}
+//                         min="0"
+//                         step="0.01"
+//                         required
+//                       />
+//                     </div>
+
+//                     <div className={styles.formGroup}>
+//                       <label>Category</label>
+//                       <select
+//                         name="category"
+//                         value={mealFormData.category}
+//                         onChange={handleMealInputChange}
+//                         required
+//                       >
+//                         <option value="vegetarian">Vegetarian</option>
+//                         <option value="non-vegetarian">Non-Vegetarian</option>
+//                         <option value="vegan">Vegan</option>
+//                         <option value="gluten-free">Gluten-Free</option>
+//                         <option value="keto">Keto</option>
+//                       </select>
+//                     </div>
+
+//                     <div className={styles.formGroup}>
+//                       <label>Preparation Time (minutes)</label>
+//                       <input
+//                         type="number"
+//                         name="preparationTime"
+//                         value={mealFormData.preparationTime}
+//                         onChange={handleMealInputChange}
+//                         min="0"
+//                         required
+//                       />
+//                     </div>
+
+//                     <div className={styles.formGroup}>
+//                       <label>Allergens</label>
+//                       <div className={styles.allergensCheckbox}>
+//                         {['gluten', 'dairy', 'nuts', 'peanuts', 'soy', 'eggs', 'fish', 'shellfish'].map(allergen => (
+//                           <label key={allergen} className={styles.checkboxLabel}>
+//                             <input
+//                               type="checkbox"
+//                               value={allergen}
+//                               checked={mealFormData.allergens.includes(allergen)}
+//                               onChange={handleAllergenChange}
+//                             />
+//                             {allergen}
+//                           </label>
+//                         ))}
+//                       </div>
+//                     </div>
+
+//                     <div className={styles.formGroup}>
+//                       <label className={styles.checkboxLabel}>
+//                         <input
+//                           type="checkbox"
+//                           name="isAvailable"
+//                           checked={mealFormData.isAvailable}
+//                           onChange={(e) => setMealFormData(prev => ({
+//                             ...prev,
+//                             isAvailable: e.target.checked
+//                           }))}
+//                         />
+//                         Available for order
+//                       </label>
+//                     </div>
+
+//                     <div className={styles.formActions}>
+//                       <button type="submit">
+//                         {editingMeal ? 'Update' : 'Create'} Meal
+//                       </button>
+//                       <button 
+//                         type="button" 
+//                         onClick={() => {
+//                           setShowMealForm(false);
+//                           setEditingMeal(null);
+//                         }}
+//                       >
+//                         Cancel
+//                       </button>
+//                     </div>
+//                   </form>
+//                 </div>
+//               </div>
+//             )}
+
+//             {/* Meals List */}
+//             <div className={styles.mealsList}>
+//               {meals.length > 0 ? (
+//                 <table className={styles.mealsTable}>
+//                   <thead>
+//                     <tr>
+//                       <th>Image</th>
+//                       <th>Name</th>
+//                       <th>Category</th>
+//                       <th>Price</th>
+//                       <th>Calories</th>
+//                       <th>Status</th>
+//                       <th>Actions</th>
+//                     </tr>
+//                   </thead>
+//                   <tbody>
+//                     {meals.map(meal => (
+//                       <tr key={meal._id}>
+//                         <td>
+//                           <img 
+//                             src={meal.image} 
+//                             alt={meal.name}
+//                             className={styles.mealImage}
+//                           />
+//                         </td>
+//                         <td>
+//                           <div className={styles.mealName}>{meal.name}</div>
+//                           <div className={styles.mealDescription}>{meal.description}</div>
+//                         </td>
+//                         <td>{meal.category}</td>
+//                         <td>₹{meal.price}</td>
+//                         <td>{meal.nutrition.calories}</td>
+//                         <td>
+//                           <span className={`${styles.statusBadge} ${
+//                             meal.isAvailable ? styles.available : styles.unavailable
+//                           }`}>
+//                             {meal.isAvailable ? 'Available' : 'Unavailable'}
+//                           </span>
+//                         </td>
+//                         <td className={styles.actions}>
+//                           <button 
+//                             onClick={() => handleEditMeal(meal)}
+//                             className={styles.editBtn}
+//                           >
+//                             Edit
+//                           </button>
+//                           <button 
+//                             onClick={() => handleToggleMealAvailability(meal)}
+//                             className={meal.isAvailable ? styles.disableBtn : styles.enableBtn}
+//                           >
+//                             {meal.isAvailable ? 'Disable' : 'Enable'}
+//                           </button>
+//                           <button 
+//                             onClick={() => handleDeleteMeal(meal._id)}
+//                             className={styles.deleteBtn}
+//                           >
+//                             Delete
+//                           </button>
+//                         </td>
+//                       </tr>
+//                     ))}
+//                   </tbody>
+//                 </table>
+//               ) : (
+//                 <div className={styles.noData}>No meals found</div>
+//               )}
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Users Tab */}
+//         {activeTab === 'users' && (
+//           <div className={styles.usersManagement}>
+//             <div className={styles.sectionHeader}>
+//               <h2>Users Management</h2>
+//               <div className={styles.userStats}>
+//                 {userStats && (
+//                   <>
+//                     <span>Total Users: <strong>{userStats.totalUsers}</strong></span>
+//                     <span>With Details: <strong>{userStats.usersWithDetails}</strong></span>
+//                     <span>Without Details: <strong>{userStats.usersWithoutDetails}</strong></span>
+//                   </>
+//                 )}
+//               </div>
+//             </div>
+
+//             {showUserForm && (
+//               <div className={styles.userFormModal}>
+//                 <div className={styles.modalContent}>
+//                   <h3>{editingUser ? 'Edit User' : 'Add New User'}</h3>
+//                   <form onSubmit={handleSubmitUser}>
+//                     <div className={styles.formGroup}>
+//                       <label>Name</label>
+//                       <input
+//                         type="text"
+//                         name="name"
+//                         value={userFormData.name}
+//                         onChange={handleUserInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Email</label>
+//                       <input
+//                         type="email"
+//                         name="email"
+//                         value={userFormData.email}
+//                         onChange={handleUserInputChange}
+//                         required
+//                         disabled={!!editingUser}
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Phone</label>
+//                       <input
+//                         type="text"
+//                         name="phone"
+//                         value={userFormData.phone}
+//                         onChange={handleUserInputChange}
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Data A</label>
+//                       <input
+//                         type="text"
+//                         name="A"
+//                         value={userFormData.A}
+//                         onChange={handleUserInputChange}
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Data B</label>
+//                       <input
+//                         type="text"
+//                         name="B"
+//                         value={userFormData.B}
+//                         onChange={handleUserInputChange}
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Data C</label>
+//                       <input
+//                         type="text"
+//                         name="C"
+//                         value={userFormData.C}
+//                         onChange={handleUserInputChange}
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Role</label>
+//                       <input
+//                         type="text"
+//                         name="role"
+//                         value={userFormData.role}
+//                         onChange={handleUserInputChange}
+//                       />
+//                     </div>
+//                     <div className={styles.formActions}>
+//                       <button type="submit">
+//                         {editingUser ? 'Update' : 'Create'} User
+//                       </button>
+//                       <button 
+//                         type="button" 
+//                         onClick={() => {
+//                           setShowUserForm(false);
+//                           setEditingUser(null);
+//                         }}
+//                       >
+//                         Cancel
+//                       </button>
+//                     </div>
+//                   </form>
+//                 </div>
+//               </div>
+//             )}
+
+//             <div className={styles.usersList}>
+//               {users.length > 0 ? (
+//                 <table className={styles.usersTable}>
+//                   <thead>
+//                     <tr>
+//                       <th>Name</th>
+//                       <th>Email</th>
+//                       <th>Phone</th>
+//                       <th>Data A</th>
+//                       <th>Data B</th>
+//                       <th>Data C</th>
+//                       <th>Role</th>
+//                       <th>Created At</th>
+//                       <th>Actions</th>
+//                     </tr>
+//                   </thead>
+//                   <tbody>
+//                     {users.map(user => (
+//                       <tr key={user._id}>
+//                         <td>{user.name || 'N/A'}</td>
+//                         <td>{user.email}</td>
+//                         <td>{user.phone || 'N/A'}</td>
+//                         <td>{user.A || 'N/A'}</td>
+//                         <td>{user.B || 'N/A'}</td>
+//                         <td>{user.C || 'N/A'}</td>
+//                         <td>{user.role || 'N/A'}</td>
+//                         <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+//                         <td className={styles.actions}>
+//                           <button 
+//                             onClick={() => handleEditUser(user)}
+//                             className={styles.editBtn}
+//                           >
+//                             Edit
+//                           </button>
+//                           <button 
+//                             onClick={() => handleDeleteUser(user.email)}
+//                             className={styles.deleteBtn}
+//                           >
+//                             Delete
+//                           </button>
+//                         </td>
+//                       </tr>
+//                     ))}
+//                   </tbody>
+//                 </table>
+//               ) : (
+//                 <div className={styles.noData}>No users found</div>
+//               )}
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Settings Tab */}
+//         {activeTab === 'settings' && (
+//           <div className={styles.settings}>
+//             <h2>Settings</h2>
+//             <div className={styles.settingsSection}>
+//               <h3>Theme Preferences</h3>
+//               <div className={styles.themeSettings}>
+//                 <label>
+//                   <input
+//                     type="checkbox"
+//                     checked={darkMode}
+//                     onChange={toggleTheme}
+//                   />
+//                   Dark Mode
+//                 </label>
+//               </div>
+//             </div>
+//             <div className={styles.settingsSection}>
+//               <h3>Real-time Updates</h3>
+//               <div className={styles.realtimeSettings}>
+//                 <p>Status: {socket ? 'Connected' : 'Disconnected'}</p>
+//                 {onlineAdmins.length > 0 && (
+//                   <div className={styles.adminList}>
+//                     <h4>Online Administrators:</h4>
+//                     <ul>
+//                       {onlineAdmins.map(admin => (
+//                         <li key={admin.id}>{admin.name || 'Admin'}</li>
+//                       ))}
+//                     </ul>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </main>
+//     </div>
+//   );
+// };
+// export default AdminDashboardPage;
+
+
+
+
+
+// -------------------meal extracted---------------
+
+
+
+// import React, { useState, useEffect, lazy, Suspense } from 'react';
+// import { useThemeTrigger } from '../../../ThemeTrigger';
+// import * as SchoolApi from '../../../API/School_api';
+// import * as UserApi from '../../../API/UserApi';
+// import { useSocket } from '../../../SocketContext';
+// import styles from './AdminDashboardPage.module.css';
+
+// // Lazy load the Meals component
+// const MealsManagement = lazy(() => import('./Sections/Meal/Meal'));
+
+// const AdminDashboardPage = () => {
+//   const { darkMode, toggleTheme } = useThemeTrigger();
+//   const [activeTab, setActiveTab] = useState('overview');
+//   const [schools, setSchools] = useState([]);
+//   const [stats, setStats] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [users, setUsers] = useState([]);
+//   const [userStats, setUserStats] = useState(null);
+//   const [editingSchool, setEditingSchool] = useState(null);
+//   const [showSchoolForm, setShowSchoolForm] = useState(false);
+//   const [editingUser, setEditingUser] = useState(null);
+//   const [showUserForm, setShowUserForm] = useState(false);
+//   const [error, setError] = useState('');
+//   const [formData, setFormData] = useState({
+//     name: '',
+//     location: '',
+//     type: 'Public',
+//     mealOptions: 0,
+//     image: ''
+//   });
+//   const [userFormData, setUserFormData] = useState({
+//     name: '',
+//     email: '',
+//     phone: '',
+//     A: '',
+//     B: '',
+//     C: '',
+//     role: ''
+//   });
+
+//   // Get socket instance
+//   const socket = useSocket();
+//   const [notifications, setNotifications] = useState([]);
+//   const [onlineAdmins, setOnlineAdmins] = useState([]);
+
+//   useEffect(() => {
+//     fetchData();
+    
+//     // Set up socket listeners if socket is available
+//     if (socket) {
+//       // Listen for real-time school updates
+//       socket.on('school-updated', (updatedSchool) => {
+//         setSchools(prev => prev.map(school => 
+//           school._id === updatedSchool._id ? updatedSchool : school
+//         ));
+//         addNotification(`School "${updatedSchool.name}" was updated by another admin`);
+//       });
+      
+//       socket.on('school-created', (newSchool) => {
+//         setSchools(prev => [...prev, newSchool]);
+//         addNotification(`New school "${newSchool.name}" was created by another admin`);
+//       });
+      
+//       socket.on('school-deleted', (deletedSchoolId) => {
+//         setSchools(prev => prev.filter(school => school._id !== deletedSchoolId));
+//         addNotification('A school was deleted by another admin');
+//       });
+      
+//       // Listen for real-time user updates
+//       socket.on('user-updated', (updatedUser) => {
+//         setUsers(prev => prev.map(user => 
+//           user._id === updatedUser._id ? updatedUser : user
+//         ));
+//         addNotification(`User "${updatedUser.name}" was updated by another admin`);
+//       });
+      
+//       socket.on('user-deleted', (deletedUserId) => {
+//         setUsers(prev => prev.filter(user => user._id !== deletedUserId));
+//         addNotification('A user was deleted by another admin');
+//       });
+            
+//       // Listen for admin online status
+//       socket.on('admin-online', (adminData) => {
+//         setOnlineAdmins(prev => {
+//           if (!prev.find(admin => admin.id === adminData.id)) {
+//             return [...prev, adminData];
+//           }
+//           return prev;
+//         });
+//       });
+      
+//       socket.on('admin-offline', (adminId) => {
+//         setOnlineAdmins(prev => prev.filter(admin => admin.id !== adminId));
+//       });
+      
+//       socket.on('online-admins', (admins) => {
+//         setOnlineAdmins(admins);
+//       });
+      
+//       // Join admin room
+//       socket.emit('join-admin-room');
+      
+//       // Clean up listeners on unmount
+//       return () => {
+//         socket.off('school-updated');
+//         socket.off('school-created');
+//         socket.off('school-deleted');
+//         socket.off('user-updated');
+//         socket.off('user-deleted');
+//         socket.off('admin-online');
+//         socket.off('admin-offline');
+//         socket.off('online-admins');
+//       };
+//     }
+//   }, [socket]);
+
+//   useEffect(() => {
+//     if (activeTab === 'users') {
+//       fetchUserData();
+//     }
+//   }, [activeTab]);
+
+//   const fetchData = async () => {
+//     try {
+//       setLoading(true);
+//       setError('');
+//       const [schoolsResponse, statsResponse] = await Promise.all([
+//         SchoolApi.getSchools(),
+//         SchoolApi.getSchoolStats()
+//       ]);
+//       setSchools(schoolsResponse.data || []);
+//       setStats(statsResponse.data);
+//     } catch (error) {
+//       console.error('Error fetching data:', error);
+//       setError('Failed to fetch data: ' + (error.message || 'Please check your connection'));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const fetchUserData = async () => {
+//     try {
+//       setError('');
+//       const [usersResponse, userStatsResponse] = await Promise.all([
+//         UserApi.getUsers(),
+//         UserApi.getUserStats()
+//       ]);
+//       setUsers(usersResponse.data || []);
+//       setUserStats(userStatsResponse.data);
+//     } catch (error) {
+//       console.error('Error fetching user data:', error);
+//       setError('Failed to fetch user data: ' + (error.message || 'Please check your connection'));
+//     }
+//   };
+
+//   const addNotification = (message) => {
+//     const newNotification = {
+//       id: Date.now(),
+//       message,
+//       timestamp: new Date(),
+//       type: 'info'
+//     };
+    
+//     setNotifications(prev => [newNotification, ...prev.slice(0, 4)]);
+    
+//     setTimeout(() => {
+//       setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
+//     }, 5000);
+//   };
+
+//   const handleInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({
+//       ...prev,
+//       [name]: value
+//     }));
+//   };
+
+//   const handleUserInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setUserFormData(prev => ({
+//       ...prev,
+//       [name]: value
+//     }));
+//   };
+
+//   const handleSubmitSchool = async (e) => {
+//     e.preventDefault();
+//     try {
+//       setError('');
+//       let response;
+      
+//       if (editingSchool) {
+//         response = await SchoolApi.updateSchool(editingSchool._id, formData);
+//         alert('School updated successfully!');
+        
+//         if (socket) {
+//           socket.emit('school-update', response.data);
+//         }
+//       } else {
+//         response = await SchoolApi.createSchool(formData);
+//         alert('School created successfully!');
+        
+//         if (socket) {
+//           socket.emit('school-create', response.data);
+//         }
+//       }
+      
+//       setShowSchoolForm(false);
+//       setEditingSchool(null);
+//       setFormData({
+//         name: '',
+//         location: '',
+//         type: 'Public',
+//         mealOptions: 0,
+//         image: ''
+//       });
+//       fetchData();
+//     } catch (error) {
+//       console.error('Error saving school:', error);
+//       setError('Failed to save school: ' + (error.message || 'Please check your input'));
+//     }
+//   };
+
+//   const handleSubmitUser = async (e) => {
+//     e.preventDefault();
+//     try {
+//       setError('');
+//       let response;
+      
+//       if (editingUser) {
+//         response = await UserApi.updateUser(editingUser.email, userFormData);
+//         alert('User updated successfully!');
+        
+//         if (socket) {
+//           socket.emit('user-update', response.data);
+//         }
+//       }
+      
+//       setShowUserForm(false);
+//       setEditingUser(null);
+//       setUserFormData({
+//         name: '',
+//         email: '',
+//         phone: '',
+//         A: '',
+//         B: '',
+//         C: '',
+//         role: ''
+//       });
+//       fetchUserData();
+//     } catch (error) {
+//       console.error('Error saving user:', error);
+//       setError('Failed to save user: ' + (error.message || 'Please check your input'));
+//     }
+//   };
+
+//   const handleEditSchool = (school) => {
+//     setEditingSchool(school);
+//     setFormData({
+//       name: school.name,
+//       location: school.location,
+//       type: school.type,
+//       mealOptions: school.mealOptions,
+//       image: school.image
+//     });
+//     setShowSchoolForm(true);
+//   };
+
+//   const handleEditUser = (user) => {
+//     setEditingUser(user);
+//     setUserFormData({
+//       name: user.name || '',
+//       email: user.email || '',
+//       phone: user.phone || '',
+//       A: user.A || '',
+//       B: user.B || '',
+//       C: user.C || '',
+//       role: user.role || ''
+//     });
+//     setShowUserForm(true);
+//   };
+
+//   const handleDeleteSchool = async (id) => {
+//     if (window.confirm('Are you sure you want to delete this school?')) {
+//       try {
+//         setError('');
+//         const schoolToDelete = schools.find(s => s._id === id);
+//         await SchoolApi.deleteSchool(id);
+//         alert('School deleted successfully!');
+        
+//         if (socket) {
+//           socket.emit('school-delete', id);
+//         }
+        
+//         fetchData();
+//       } catch (error) {
+//         console.error('Error deleting school:', error);
+//         setError('Failed to delete school: ' + (error.message || 'Invalid school ID'));
+//       }
+//     }
+//   };
+
+//   const handleDeleteUser = async (email) => {
+//     if (window.confirm('Are you sure you want to delete this user?')) {
+//       try {
+//         setError('');
+//         const userToDelete = users.find(u => u.email === email);
+//         await UserApi.deleteUser(email);
+//         alert('User deleted successfully!');
+        
+//         if (socket && userToDelete) {
+//           socket.emit('user-delete', userToDelete._id);
+//         }
+        
+//         fetchUserData();
+//       } catch (error) {
+//         console.error('Error deleting user:', error);
+//         setError('Failed to delete user: ' + (error.message || 'Invalid user email'));
+//       }
+//     }
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className={`${styles.adminDashboard} ${darkMode ? styles.dark : styles.light}`}>
+//         <div className={styles.loading}>Loading...</div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className={`${styles.adminDashboard} ${darkMode ? styles.dark : styles.light}`}>
+//       {/* Header */}
+//       <header className={styles.adminHeader}>
+//         <div className={styles.headerLeft}>
+//           <h1>Admin Dashboard</h1>
+//           {socket && (
+//             <div className={styles.connectionStatus}>
+//               <span className={styles.statusIndicator}></span>
+//               Real-time updates enabled
+//             </div>
+//           )}
+//         </div>
+//         <div className={styles.headerRight}>
+//           {onlineAdmins.length > 0 && (
+//             <div className={styles.onlineAdmins}>
+//               <span>{onlineAdmins.length} admin(s) online</span>
+//             </div>
+//           )}
+//         </div>
+//       </header>
+
+//       {/* Notifications */}
+//       {notifications.length > 0 && (
+//         <div className={styles.notificationsContainer}>
+//           {notifications.map(notification => (
+//             <div key={notification.id} className={styles.notification}>
+//               <span>{notification.message}</span>
+//               <button 
+//                 onClick={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))} 
+//                 className={styles.closeNotification}
+//               >
+//                 ×
+//               </button>
+//             </div>
+//           ))}
+//         </div>
+//       )}
+
+//       {/* Error Message */}
+//       {error && (
+//         <div className={styles.errorBanner}>
+//           <span>{error}</span>
+//           <button onClick={() => setError('')} className={styles.closeError}>×</button>
+//         </div>
+//       )}
+
+//       {/* Navigation */}
+//       <nav className={styles.adminNav}>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'overview' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('overview')}
+//         >
+//           Overview
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'schools' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('schools')}
+//         >
+//           Schools
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'meals' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('meals')}
+//         >
+//           Meals
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'users' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('users')}
+//         >
+//           Users
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'settings' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('settings')}
+//         >
+//           Settings
+//         </button>
+//       </nav>
+
+//       {/* Main Content */}
+//       <main className={styles.adminContent}>
+//         {/* Overview Tab */}
+//         {activeTab === 'overview' && (
+//           <div className={styles.overview}>
+//             <h2>Dashboard Overview</h2>
+//             {stats ? (
+//               <div className={styles.statsGrid}>
+//                 <div className={styles.statCard}>
+//                   <h3>Total Schools</h3>
+//                   <p className={styles.statNumber}>{stats.totalSchools}</p>
+//                 </div>
+//                 <div className={styles.statCard}>
+//                   <h3>Total Meal Options</h3>
+//                   <p className={styles.statNumber}>{stats.mealOptions?.totalMealOptions || 0}</p>
+//                 </div>
+//                 <div className={styles.statCard}>
+//                   <h3>Average Meals per School</h3>
+//                   <p className={styles.statNumber}>
+//                     {stats.mealOptions ? Math.round(stats.mealOptions.avgMealOptions) : 0}
+//                   </p>
+//                 </div>
+//                 <div className={styles.statCard}>
+//                   <h3>School Types</h3>
+//                   <div className={styles.typeStats}>
+//                     {stats.schoolsByType?.map(type => (
+//                       <div key={type._id} className={styles.typeStat}>
+//                         <span>{type._id}: </span>
+//                         <strong>{type.count}</strong>
+//                       </div>
+//                     )) || <div>No data available</div>}
+//                   </div>
+//                 </div>
+//               </div>
+//             ) : (
+//               <div className={styles.noData}>No statistics data available</div>
+//             )}
+//           </div>
+//         )}
+
+//         {/* Schools Tab */}
+//         {activeTab === 'schools' && (
+//           <div className={styles.schoolsManagement}>
+//             <div className={styles.sectionHeader}>
+//               <h2>Schools Management</h2>
+//               <button 
+//                 className={styles.addSchoolBtn}
+//                 onClick={() => setShowSchoolForm(true)}
+//               >
+//                 Add New School
+//               </button>
+//             </div>
+
+//             {showSchoolForm && (
+//               <div className={styles.schoolFormModal}>
+//                 <div className={styles.modalContent}>
+//                   <h3>{editingSchool ? 'Edit School' : 'Add New School'}</h3>
+//                   <form onSubmit={handleSubmitSchool}>
+//                     <div className={styles.formGroup}>
+//                       <label>School Name</label>
+//                       <input
+//                         type="text"
+//                         name="name"
+//                         value={formData.name}
+//                         onChange={handleInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Location</label>
+//                       <input
+//                         type="text"
+//                         name="location"
+//                         value={formData.location}
+//                         onChange={handleInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Type</label>
+//                       <select
+//                         name="type"
+//                         value={formData.type}
+//                         onChange={handleInputChange}
+//                         required
+//                       >
+//                         <option value="Public">Public</option>
+//                         <option value="Private">Private</option>
+//                         <option value="International">International</option>
+//                         <option value="Government">Government</option>
+//                       </select>
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Meal Options</label>
+//                       <input
+//                         type="number"
+//                         name="mealOptions"
+//                         value={formData.mealOptions}
+//                         onChange={handleInputChange}
+//                         min="0"
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Image URL</label>
+//                       <input
+//                         type="url"
+//                         name="image"
+//                         value={formData.image}
+//                         onChange={handleInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formActions}>
+//                       <button type="submit">
+//                         {editingSchool ? 'Update' : 'Create'} School
+//                       </button>
+//                       <button 
+//                         type="button" 
+//                         onClick={() => {
+//                           setShowSchoolForm(false);
+//                           setEditingSchool(null);
+//                         }}
+//                       >
+//                         Cancel
+//                       </button>
+//                     </div>
+//                   </form>
+//                 </div>
+//               </div>
+//             )}
+
+//             <div className={styles.schoolsList}>
+//               {schools.length > 0 ? (
+//                 <table className={styles.schoolsTable}>
+//                   <thead>
+//                     <tr>
+//                       <th>Name</th>
+//                       <th>Location</th>
+//                       <th>Type</th>
+//                       <th>Meal Options</th>
+//                       <th>Actions</th>
+//                     </tr>
+//                   </thead>
+//                   <tbody>
+//                     {schools.map(school => (
+//                       <tr key={school._id}>
+//                         <td>{school.name}</td>
+//                         <td>{school.location}</td>
+//                         <td>{school.type}</td>
+//                         <td>{school.mealOptions}</td>
+//                         <td className={styles.actions}>
+//                           <button 
+//                             onClick={() => handleEditSchool(school)}
+//                             className={styles.editBtn}
+//                           >
+//                             Edit
+//                           </button>
+//                           <button 
+//                             onClick={() => handleDeleteSchool(school._id)}
+//                             className={styles.deleteBtn}
+//                           >
+//                             Delete
+//                           </button>
+//                         </td>
+//                       </tr>
+//                     ))}
+//                   </tbody>
+//                 </table>
+//               ) : (
+//                 <div className={styles.noData}>No schools found</div>
+//               )}
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Meals Tab - Lazy Loaded */}
+//         {activeTab === 'meals' && (
+//           <Suspense fallback={<div className={styles.loading}>Loading meals...</div>}>
+//             <MealsManagement 
+//               darkMode={darkMode}
+//               socket={socket}
+//               addNotification={addNotification}
+//             />
+//           </Suspense>
+//         )}
+
+//         {/* Users Tab */}
+//         {activeTab === 'users' && (
+//           <div className={styles.usersManagement}>
+//             <div className={styles.sectionHeader}>
+//               <h2>Users Management</h2>
+//               <div className={styles.userStats}>
+//                 {userStats && (
+//                   <>
+//                     <span>Total Users: <strong>{userStats.totalUsers}</strong></span>
+//                     <span>With Details: <strong>{userStats.usersWithDetails}</strong></span>
+//                     <span>Without Details: <strong>{userStats.usersWithoutDetails}</strong></span>
+//                   </>
+//                 )}
+//               </div>
+//             </div>
+
+//             {showUserForm && (
+//               <div className={styles.userFormModal}>
+//                 <div className={styles.modalContent}>
+//                   <h3>{editingUser ? 'Edit User' : 'Add New User'}</h3>
+//                   <form onSubmit={handleSubmitUser}>
+//                     <div className={styles.formGroup}>
+//                       <label>Name</label>
+//                       <input
+//                         type="text"
+//                         name="name"
+//                         value={userFormData.name}
+//                         onChange={handleUserInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Email</label>
+//                       <input
+//                         type="email"
+//                         name="email"
+//                         value={userFormData.email}
+//                         onChange={handleUserInputChange}
+//                         required
+//                         disabled={!!editingUser}
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Phone</label>
+//                       <input
+//                         type="text"
+//                         name="phone"
+//                         value={userFormData.phone}
+//                         onChange={handleUserInputChange}
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Data A</label>
+//                       <input
+//                         type="text"
+//                         name="A"
+//                         value={userFormData.A}
+//                         onChange={handleUserInputChange}
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Data B</label>
+//                       <input
+//                         type="text"
+//                         name="B"
+//                         value={userFormData.B}
+//                         onChange={handleUserInputChange}
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Data C</label>
+//                       <input
+//                         type="text"
+//                         name="C"
+//                         value={userFormData.C}
+//                         onChange={handleUserInputChange}
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Role</label>
+//                       <input
+//                         type="text"
+//                         name="role"
+//                         value={userFormData.role}
+//                         onChange={handleUserInputChange}
+//                       />
+//                     </div>
+//                     <div className={styles.formActions}>
+//                       <button type="submit">
+//                         {editingUser ? 'Update' : 'Create'} User
+//                       </button>
+//                       <button 
+//                         type="button" 
+//                         onClick={() => {
+//                           setShowUserForm(false);
+//                           setEditingUser(null);
+//                         }}
+//                       >
+//                         Cancel
+//                       </button>
+//                     </div>
+//                   </form>
+//                 </div>
+//               </div>
+//             )}
+
+//             <div className={styles.usersList}>
+//               {users.length > 0 ? (
+//                 <table className={styles.usersTable}>
+//                   <thead>
+//                     <tr>
+//                       <th>Name</th>
+//                       <th>Email</th>
+//                       <th>Phone</th>
+//                       <th>Data A</th>
+//                       <th>Data B</th>
+//                       <th>Data C</th>
+//                       <th>Role</th>
+//                       <th>Created At</th>
+//                       <th>Actions</th>
+//                     </tr>
+//                   </thead>
+//                   <tbody>
+//                     {users.map(user => (
+//                       <tr key={user._id}>
+//                         <td>{user.name || 'N/A'}</td>
+//                         <td>{user.email}</td>
+//                         <td>{user.phone || 'N/A'}</td>
+//                         <td>{user.A || 'N/A'}</td>
+//                         <td>{user.B || 'N/A'}</td>
+//                         <td>{user.C || 'N/A'}</td>
+//                         <td>{user.role || 'N/A'}</td>
+//                         <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+//                         <td className={styles.actions}>
+//                           <button 
+//                             onClick={() => handleEditUser(user)}
+//                             className={styles.editBtn}
+//                           >
+//                             Edit
+//                           </button>
+//                           <button 
+//                             onClick={() => handleDeleteUser(user.email)}
+//                             className={styles.deleteBtn}
+//                           >
+//                             Delete
+//                           </button>
+//                         </td>
+//                       </tr>
+//                     ))}
+//                   </tbody>
+//                 </table>
+//               ) : (
+//                 <div className={styles.noData}>No users found</div>
+//               )}
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Settings Tab */}
+//         {activeTab === 'settings' && (
+//           <div className={styles.settings}>
+//             <h2>Settings</h2>
+//             <div className={styles.settingsSection}>
+//               <h3>Theme Preferences</h3>
+//               <div className={styles.themeSettings}>
+//                 <label>
+//                   <input
+//                     type="checkbox"
+//                     checked={darkMode}
+//                     onChange={toggleTheme}
+//                   />
+//                   Dark Mode
+//                 </label>
+//               </div>
+//             </div>
+//             <div className={styles.settingsSection}>
+//               <h3>Real-time Updates</h3>
+//               <div className={styles.realtimeSettings}>
+//                 <p>Status: {socket ? 'Connected' : 'Disconnected'}</p>
+//                 {onlineAdmins.length > 0 && (
+//                   <div className={styles.adminList}>
+//                     <h4>Online Administrators:</h4>
+//                     <ul>
+//                       {onlineAdmins.map(admin => (
+//                         <li key={admin.id}>{admin.name || 'Admin'}</li>
+//                       ))}
+//                     </ul>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </main>
+//     </div>
+//   );
+// };
+
+// export default AdminDashboardPage;
+
+
+
+// --------------user extracted-------------------------------------
+
+
+
+
+// import React, { useState, useEffect, lazy, Suspense } from 'react';
+// import { useThemeTrigger } from '../../../ThemeTrigger';
+// import * as SchoolApi from '../../../API/School_api';
+// import { useSocket } from '../../../SocketContext';
+// import styles from './AdminDashboardPage.module.css';
+
+// // Lazy load the Meals component
+// const MealsManagement = lazy(() => import('./Sections/Meal/Meal'));
+// // Lazy load the Users component
+// const UsersManagement = lazy(() => import('./sections/User/User'));
+
+// const AdminDashboardPage = () => {
+//   const { darkMode, toggleTheme } = useThemeTrigger();
+//   const [activeTab, setActiveTab] = useState('overview');
+//   const [schools, setSchools] = useState([]);
+//   const [stats, setStats] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [editingSchool, setEditingSchool] = useState(null);
+//   const [showSchoolForm, setShowSchoolForm] = useState(false);
+//   const [editingUser, setEditingUser] = useState(null);
+//   const [showUserForm, setShowUserForm] = useState(false);
+//   const [error, setError] = useState('');
+//   const [formData, setFormData] = useState({
+//     name: '',
+//     location: '',
+//     type: 'Public',
+//     mealOptions: 0,
+//     image: ''
+//   });
+
+//   // Get socket instance
+//   const socket = useSocket();
+//   const [notifications, setNotifications] = useState([]);
+//   const [onlineAdmins, setOnlineAdmins] = useState([]);
+
+//   useEffect(() => {
+//     fetchData();
+    
+//     // Set up socket listeners if socket is available
+//     if (socket) {
+//       // Listen for real-time school updates
+//       socket.on('school-updated', (updatedSchool) => {
+//         setSchools(prev => prev.map(school => 
+//           school._id === updatedSchool._id ? updatedSchool : school
+//         ));
+//         addNotification(`School "${updatedSchool.name}" was updated by another admin`);
+//       });
+      
+//       socket.on('school-created', (newSchool) => {
+//         setSchools(prev => [...prev, newSchool]);
+//         addNotification(`New school "${newSchool.name}" was created by another admin`);
+//       });
+      
+//       socket.on('school-deleted', (deletedSchoolId) => {
+//         setSchools(prev => prev.filter(school => school._id !== deletedSchoolId));
+//         addNotification('A school was deleted by another admin');
+//       });
+            
+//       // Listen for admin online status
+//       socket.on('admin-online', (adminData) => {
+//         setOnlineAdmins(prev => {
+//           if (!prev.find(admin => admin.id === adminData.id)) {
+//             return [...prev, adminData];
+//           }
+//           return prev;
+//         });
+//       });
+      
+//       socket.on('admin-offline', (adminId) => {
+//         setOnlineAdmins(prev => prev.filter(admin => admin.id !== adminId));
+//       });
+      
+//       socket.on('online-admins', (admins) => {
+//         setOnlineAdmins(admins);
+//       });
+      
+//       // Join admin room
+//       socket.emit('join-admin-room');
+      
+//       // Clean up listeners on unmount
+//       return () => {
+//         socket.off('school-updated');
+//         socket.off('school-created');
+//         socket.off('school-deleted');
+//         socket.off('admin-online');
+//         socket.off('admin-offline');
+//         socket.off('online-admins');
+//       };
+//     }
+//   }, [socket]);
+
+//   const fetchData = async () => {
+//     try {
+//       setLoading(true);
+//       setError('');
+//       const [schoolsResponse, statsResponse] = await Promise.all([
+//         SchoolApi.getSchools(),
+//         SchoolApi.getSchoolStats()
+//       ]);
+//       setSchools(schoolsResponse.data || []);
+//       setStats(statsResponse.data);
+//     } catch (error) {
+//       console.error('Error fetching data:', error);
+//       setError('Failed to fetch data: ' + (error.message || 'Please check your connection'));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const addNotification = (message) => {
+//     const newNotification = {
+//       id: Date.now(),
+//       message,
+//       timestamp: new Date(),
+//       type: 'info'
+//     };
+    
+//     setNotifications(prev => [newNotification, ...prev.slice(0, 4)]);
+    
+//     setTimeout(() => {
+//       setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
+//     }, 5000);
+//   };
+
+//   const handleInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({
+//       ...prev,
+//       [name]: value
+//     }));
+//   };
+
+//   const handleSubmitSchool = async (e) => {
+//     e.preventDefault();
+//     try {
+//       setError('');
+//       let response;
+      
+//       if (editingSchool) {
+//         response = await SchoolApi.updateSchool(editingSchool._id, formData);
+//         alert('School updated successfully!');
+        
+//         if (socket) {
+//           socket.emit('school-update', response.data);
+//         }
+//       } else {
+//         response = await SchoolApi.createSchool(formData);
+//         alert('School created successfully!');
+        
+//         if (socket) {
+//           socket.emit('school-create', response.data);
+//         }
+//       }
+      
+//       setShowSchoolForm(false);
+//       setEditingSchool(null);
+//       setFormData({
+//         name: '',
+//         location: '',
+//         type: 'Public',
+//         mealOptions: 0,
+//         image: ''
+//       });
+//       fetchData();
+//     } catch (error) {
+//       console.error('Error saving school:', error);
+//       setError('Failed to save school: ' + (error.message || 'Please check your input'));
+//     }
+//   };
+
+//   const handleEditSchool = (school) => {
+//     setEditingSchool(school);
+//     setFormData({
+//       name: school.name,
+//       location: school.location,
+//       type: school.type,
+//       mealOptions: school.mealOptions,
+//       image: school.image
+//     });
+//     setShowSchoolForm(true);
+//   };
+
+//   const handleDeleteSchool = async (id) => {
+//     if (window.confirm('Are you sure you want to delete this school?')) {
+//       try {
+//         setError('');
+//         const schoolToDelete = schools.find(s => s._id === id);
+//         await SchoolApi.deleteSchool(id);
+//         alert('School deleted successfully!');
+        
+//         if (socket) {
+//           socket.emit('school-delete', id);
+//         }
+        
+//         fetchData();
+//       } catch (error) {
+//         console.error('Error deleting school:', error);
+//         setError('Failed to delete school: ' + (error.message || 'Invalid school ID'));
+//       }
+//     }
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className={`${styles.adminDashboard} ${darkMode ? styles.dark : styles.light}`}>
+//         <div className={styles.loading}>Loading...</div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className={`${styles.adminDashboard} ${darkMode ? styles.dark : styles.light}`}>
+//       {/* Header */}
+//       <header className={styles.adminHeader}>
+//         <div className={styles.headerLeft}>
+//           <h1>Admin Dashboard</h1>
+//           {socket && (
+//             <div className={styles.connectionStatus}>
+//               <span className={styles.statusIndicator}></span>
+//               Real-time updates enabled
+//             </div>
+//           )}
+//         </div>
+//         <div className={styles.headerRight}>
+//           {onlineAdmins.length > 0 && (
+//             <div className={styles.onlineAdmins}>
+//               <span>{onlineAdmins.length} admin(s) online</span>
+//             </div>
+//           )}
+//         </div>
+//       </header>
+
+//       {/* Notifications */}
+//       {notifications.length > 0 && (
+//         <div className={styles.notificationsContainer}>
+//           {notifications.map(notification => (
+//             <div key={notification.id} className={styles.notification}>
+//               <span>{notification.message}</span>
+//               <button 
+//                 onClick={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))} 
+//                 className={styles.closeNotification}
+//               >
+//                 ×
+//               </button>
+//             </div>
+//           ))}
+//         </div>
+//       )}
+
+//       {/* Error Message */}
+//       {error && (
+//         <div className={styles.errorBanner}>
+//           <span>{error}</span>
+//           <button onClick={() => setError('')} className={styles.closeError}>×</button>
+//         </div>
+//       )}
+
+//       {/* Navigation */}
+//       <nav className={styles.adminNav}>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'overview' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('overview')}
+//         >
+//           Overview
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'schools' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('schools')}
+//         >
+//           Schools
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'meals' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('meals')}
+//         >
+//           Meals
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'users' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('users')}
+//         >
+//           Users
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'settings' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('settings')}
+//         >
+//           Settings
+//         </button>
+//       </nav>
+
+//       {/* Main Content */}
+//       <main className={styles.adminContent}>
+//         {/* Overview Tab */}
+//         {activeTab === 'overview' && (
+//           <div className={styles.overview}>
+//             <h2>Dashboard Overview</h2>
+//             {stats ? (
+//               <div className={styles.statsGrid}>
+//                 <div className={styles.statCard}>
+//                   <h3>Total Schools</h3>
+//                   <p className={styles.statNumber}>{stats.totalSchools}</p>
+//                 </div>
+//                 <div className={styles.statCard}>
+//                   <h3>Total Meal Options</h3>
+//                   <p className={styles.statNumber}>{stats.mealOptions?.totalMealOptions || 0}</p>
+//                 </div>
+//                 <div className={styles.statCard}>
+//                   <h3>Average Meals per School</h3>
+//                   <p className={styles.statNumber}>
+//                     {stats.mealOptions ? Math.round(stats.mealOptions.avgMealOptions) : 0}
+//                   </p>
+//                 </div>
+//                 <div className={styles.statCard}>
+//                   <h3>School Types</h3>
+//                   <div className={styles.typeStats}>
+//                     {stats.schoolsByType?.map(type => (
+//                       <div key={type._id} className={styles.typeStat}>
+//                         <span>{type._id}: </span>
+//                         <strong>{type.count}</strong>
+//                       </div>
+//                     )) || <div>No data available</div>}
+//                   </div>
+//                 </div>
+//               </div>
+//             ) : (
+//               <div className={styles.noData}>No statistics data available</div>
+//             )}
+//           </div>
+//         )}
+
+//         {/* Schools Tab */}
+//         {activeTab === 'schools' && (
+//           <div className={styles.schoolsManagement}>
+//             <div className={styles.sectionHeader}>
+//               <h2>Schools Management</h2>
+//               <button 
+//                 className={styles.addSchoolBtn}
+//                 onClick={() => setShowSchoolForm(true)}
+//               >
+//                 Add New School
+//               </button>
+//             </div>
+
+//             {showSchoolForm && (
+//               <div className={styles.schoolFormModal}>
+//                 <div className={styles.modalContent}>
+//                   <h3>{editingSchool ? 'Edit School' : 'Add New School'}</h3>
+//                   <form onSubmit={handleSubmitSchool}>
+//                     <div className={styles.formGroup}>
+//                       <label>School Name</label>
+//                       <input
+//                         type="text"
+//                         name="name"
+//                         value={formData.name}
+//                         onChange={handleInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Location</label>
+//                       <input
+//                         type="text"
+//                         name="location"
+//                         value={formData.location}
+//                         onChange={handleInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Type</label>
+//                       <select
+//                         name="type"
+//                         value={formData.type}
+//                         onChange={handleInputChange}
+//                         required
+//                       >
+//                         <option value="Public">Public</option>
+//                         <option value="Private">Private</option>
+//                         <option value="International">International</option>
+//                         <option value="Government">Government</option>
+//                       </select>
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Meal Options</label>
+//                       <input
+//                         type="number"
+//                         name="mealOptions"
+//                         value={formData.mealOptions}
+//                         onChange={handleInputChange}
+//                         min="0"
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formGroup}>
+//                       <label>Image URL</label>
+//                       <input
+//                         type="url"
+//                         name="image"
+//                         value={formData.image}
+//                         onChange={handleInputChange}
+//                         required
+//                       />
+//                     </div>
+//                     <div className={styles.formActions}>
+//                       <button type="submit">
+//                         {editingSchool ? 'Update' : 'Create'} School
+//                       </button>
+//                       <button 
+//                         type="button" 
+//                         onClick={() => {
+//                           setShowSchoolForm(false);
+//                           setEditingSchool(null);
+//                         }}
+//                       >
+//                         Cancel
+//                       </button>
+//                     </div>
+//                   </form>
+//                 </div>
+//               </div>
+//             )}
+
+//             <div className={styles.schoolsList}>
+//               {schools.length > 0 ? (
+//                 <table className={styles.schoolsTable}>
+//                   <thead>
+//                     <tr>
+//                       <th>Name</th>
+//                       <th>Location</th>
+//                       <th>Type</th>
+//                       <th>Meal Options</th>
+//                       <th>Actions</th>
+//                     </tr>
+//                   </thead>
+//                   <tbody>
+//                     {schools.map(school => (
+//                       <tr key={school._id}>
+//                         <td>{school.name}</td>
+//                         <td>{school.location}</td>
+//                         <td>{school.type}</td>
+//                         <td>{school.mealOptions}</td>
+//                         <td className={styles.actions}>
+//                           <button 
+//                             onClick={() => handleEditSchool(school)}
+//                             className={styles.editBtn}
+//                           >
+//                             Edit
+//                           </button>
+//                           <button 
+//                             onClick={() => handleDeleteSchool(school._id)}
+//                             className={styles.deleteBtn}
+//                           >
+//                             Delete
+//                           </button>
+//                         </td>
+//                       </tr>
+//                     ))}
+//                   </tbody>
+//                 </table>
+//               ) : (
+//                 <div className={styles.noData}>No schools found</div>
+//               )}
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Meals Tab - Lazy Loaded */}
+//         {activeTab === 'meals' && (
+//           <Suspense fallback={<div className={styles.loading}>Loading meals...</div>}>
+//             <MealsManagement 
+//               darkMode={darkMode}
+//               socket={socket}
+//               addNotification={addNotification}
+//             />
+//           </Suspense>
+//         )}
+
+//         {/* Users Tab - Lazy Loaded */}
+//         {activeTab === 'users' && (
+//           <Suspense fallback={<div className={styles.loading}>Loading users...</div>}>
+//             <UsersManagement 
+//               darkMode={darkMode}
+//               socket={socket}
+//               addNotification={addNotification}
+//               showUserForm={showUserForm}
+//               setShowUserForm={setShowUserForm}
+//               editingUser={editingUser}
+//               setEditingUser={setEditingUser}
+//             />
+//           </Suspense>
+//         )}
+
+//         {/* Settings Tab */}
+//         {activeTab === 'settings' && (
+//           <div className={styles.settings}>
+//             <h2>Settings</h2>
+//             <div className={styles.settingsSection}>
+//               <h3>Theme Preferences</h3>
+//               <div className={styles.themeSettings}>
+//                 <label>
+//                   <input
+//                     type="checkbox"
+//                     checked={darkMode}
+//                     onChange={toggleTheme}
+//                   />
+//                   Dark Mode
+//                 </label>
+//               </div>
+//             </div>
+//             <div className={styles.settingsSection}>
+//               <h3>Real-time Updates</h3>
+//               <div className={styles.realtimeSettings}>
+//                 <p>Status: {socket ? 'Connected' : 'Disconnected'}</p>
+//                 {onlineAdmins.length > 0 && (
+//                   <div className={styles.adminList}>
+//                     <h4>Online Administrators:</h4>
+//                     <ul>
+//                       {onlineAdmins.map(admin => (
+//                         <li key={admin.id}>{admin.name || 'Admin'}</li>
+//                       ))}
+//                     </ul>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </main>
+//     </div>
+//   );
+// };
+
+// export default AdminDashboardPage;
+
+
+
+
+// -----------------------School extracted--------------------------------
+
+
+
+// import React, { useState, useEffect, lazy, Suspense } from 'react';
+// import { useThemeTrigger } from '../../../ThemeTrigger';
+// import * as SchoolApi from '../../../API/School_api';
+// import { useSocket } from '../../../SocketContext';
+// import styles from './AdminDashboardPage.module.css';
+
+// // Lazy load the components
+// const MealsManagement = lazy(() => import('./Sections/Meal/Meal'));
+// const UsersManagement = lazy(() => import('./sections/User/User'));
+// const SchoolManagement = lazy(() => import('./Sections/School/School')); // Add this line
+
+// const AdminDashboardPage = () => {
+//   const { darkMode, toggleTheme } = useThemeTrigger();
+//   const [activeTab, setActiveTab] = useState('overview');
+//   const [schools, setSchools] = useState([]);
+//   const [stats, setStats] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [editingUser, setEditingUser] = useState(null);
+//   const [showUserForm, setShowUserForm] = useState(false);
+//   const [error, setError] = useState('');
+
+//   // Get socket instance
+//   const socket = useSocket();
+//   const [notifications, setNotifications] = useState([]);
+//   const [onlineAdmins, setOnlineAdmins] = useState([]);
+
+//   useEffect(() => {
+//     fetchData();
+    
+//     // Set up socket listeners if socket is available
+//     if (socket) {
+//       // Listen for real-time school updates
+//       socket.on('school-updated', (updatedSchool) => {
+//         setSchools(prev => prev.map(school => 
+//           school._id === updatedSchool._id ? updatedSchool : school
+//         ));
+//         addNotification(`School "${updatedSchool.name}" was updated by another admin`);
+//       });
+      
+//       socket.on('school-created', (newSchool) => {
+//         setSchools(prev => [...prev, newSchool]);
+//         addNotification(`New school "${newSchool.name}" was created by another admin`);
+//       });
+      
+//       socket.on('school-deleted', (deletedSchoolId) => {
+//         setSchools(prev => prev.filter(school => school._id !== deletedSchoolId));
+//         addNotification('A school was deleted by another admin');
+//       });
+            
+//       // Listen for admin online status
+//       socket.on('admin-online', (adminData) => {
+//         setOnlineAdmins(prev => {
+//           if (!prev.find(admin => admin.id === adminData.id)) {
+//             return [...prev, adminData];
+//           }
+//           return prev;
+//         });
+//       });
+      
+//       socket.on('admin-offline', (adminId) => {
+//         setOnlineAdmins(prev => prev.filter(admin => admin.id !== adminId));
+//       });
+      
+//       socket.on('online-admins', (admins) => {
+//         setOnlineAdmins(admins);
+//       });
+      
+//       // Join admin room
+//       socket.emit('join-admin-room');
+      
+//       // Clean up listeners on unmount
+//       return () => {
+//         socket.off('school-updated');
+//         socket.off('school-created');
+//         socket.off('school-deleted');
+//         socket.off('admin-online');
+//         socket.off('admin-offline');
+//         socket.off('online-admins');
+//       };
+//     }
+//   }, [socket]);
+
+//   const fetchData = async () => {
+//     try {
+//       setLoading(true);
+//       setError('');
+//       const [schoolsResponse, statsResponse] = await Promise.all([
+//         SchoolApi.getSchools(),
+//         SchoolApi.getSchoolStats()
+//       ]);
+//       setSchools(schoolsResponse.data || []);
+//       setStats(statsResponse.data);
+//     } catch (error) {
+//       console.error('Error fetching data:', error);
+//       setError('Failed to fetch data: ' + (error.message || 'Please check your connection'));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const addNotification = (message) => {
+//     const newNotification = {
+//       id: Date.now(),
+//       message,
+//       timestamp: new Date(),
+//       type: 'info'
+//     };
+    
+//     setNotifications(prev => [newNotification, ...prev.slice(0, 4)]);
+    
+//     setTimeout(() => {
+//       setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
+//     }, 5000);
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className={`${styles.adminDashboard} ${darkMode ? styles.dark : styles.light}`}>
+//         <div className={styles.loading}>Loading...</div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className={`${styles.adminDashboard} ${darkMode ? styles.dark : styles.light}`}>
+//       {/* Header */}
+//       <header className={styles.adminHeader}>
+//         <div className={styles.headerLeft}>
+//           <h1>Admin Dashboard</h1>
+//           {socket && (
+//             <div className={styles.connectionStatus}>
+//               <span className={styles.statusIndicator}></span>
+//               Real-time updates enabled
+//             </div>
+//           )}
+//         </div>
+//         <div className={styles.headerRight}>
+//           {onlineAdmins.length > 0 && (
+//             <div className={styles.onlineAdmins}>
+//               <span>{onlineAdmins.length} admin(s) online</span>
+//             </div>
+//           )}
+//         </div>
+//       </header>
+
+//       {/* Notifications */}
+//       {notifications.length > 0 && (
+//         <div className={styles.notificationsContainer}>
+//           {notifications.map(notification => (
+//             <div key={notification.id} className={styles.notification}>
+//               <span>{notification.message}</span>
+//               <button 
+//                 onClick={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))} 
+//                 className={styles.closeNotification}
+//               >
+//                 ×
+//               </button>
+//             </div>
+//           ))}
+//         </div>
+//       )}
+
+//       {/* Error Message */}
+//       {error && (
+//         <div className={styles.errorBanner}>
+//           <span>{error}</span>
+//           <button onClick={() => setError('')} className={styles.closeError}>×</button>
+//         </div>
+//       )}
+
+//       {/* Navigation */}
+//       <nav className={styles.adminNav}>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'overview' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('overview')}
+//         >
+//           Overview
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'schools' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('schools')}
+//         >
+//           Schools
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'meals' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('meals')}
+//         >
+//           Meals
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'users' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('users')}
+//         >
+//           Users
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'settings' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('settings')}
+//         >
+//           Settings
+//         </button>
+//       </nav>
+
+//       {/* Main Content */}
+//       <main className={styles.adminContent}>
+//         {/* Overview Tab */}
+//         {activeTab === 'overview' && (
+//           <div className={styles.overview}>
+//             <h2>Dashboard Overview</h2>
+//             {stats ? (
+//               <div className={styles.statsGrid}>
+//                 <div className={styles.statCard}>
+//                   <h3>Total Schools</h3>
+//                   <p className={styles.statNumber}>{stats.totalSchools}</p>
+//                 </div>
+//                 <div className={styles.statCard}>
+//                   <h3>Total Meal Options</h3>
+//                   <p className={styles.statNumber}>{stats.mealOptions?.totalMealOptions || 0}</p>
+//                 </div>
+//                 <div className={styles.statCard}>
+//                   <h3>Average Meals per School</h3>
+//                   <p className={styles.statNumber}>
+//                     {stats.mealOptions ? Math.round(stats.mealOptions.avgMealOptions) : 0}
+//                   </p>
+//                 </div>
+//                 <div className={styles.statCard}>
+//                   <h3>School Types</h3>
+//                   <div className={styles.typeStats}>
+//                     {stats.schoolsByType?.map(type => (
+//                       <div key={type._id} className={styles.typeStat}>
+//                         <span>{type._id}: </span>
+//                         <strong>{type.count}</strong>
+//                       </div>
+//                     )) || <div>No data available</div>}
+//                   </div>
+//                 </div>
+//               </div>
+//             ) : (
+//               <div className={styles.noData}>No statistics data available</div>
+//             )}
+//           </div>
+//         )}
+
+//         {/* Schools Tab - Lazy Loaded */}
+//         {activeTab === 'schools' && (
+//           <Suspense fallback={<div className={styles.loading}>Loading schools management...</div>}>
+//             <SchoolManagement 
+//               darkMode={darkMode}
+//               socket={socket}
+//               addNotification={addNotification}
+//               schools={schools}
+//               setSchools={setSchools}
+//               fetchData={fetchData}
+//             />
+//           </Suspense>
+//         )}
+
+//         {/* Meals Tab - Lazy Loaded */}
+//         {activeTab === 'meals' && (
+//           <Suspense fallback={<div className={styles.loading}>Loading meals...</div>}>
+//             <MealsManagement 
+//               darkMode={darkMode}
+//               socket={socket}
+//               addNotification={addNotification}
+//             />
+//           </Suspense>
+//         )}
+
+//         {/* Users Tab - Lazy Loaded */}
+//         {activeTab === 'users' && (
+//           <Suspense fallback={<div className={styles.loading}>Loading users...</div>}>
+//             <UsersManagement 
+//               darkMode={darkMode}
+//               socket={socket}
+//               addNotification={addNotification}
+//               showUserForm={showUserForm}
+//               setShowUserForm={setShowUserForm}
+//               editingUser={editingUser}
+//               setEditingUser={setEditingUser}
+//             />
+//           </Suspense>
+//         )}
+
+//         {/* Settings Tab */}
+//         {activeTab === 'settings' && (
+//           <div className={styles.settings}>
+//             <h2>Settings</h2>
+//             <div className={styles.settingsSection}>
+//               <h3>Theme Preferences</h3>
+//               <div className={styles.themeSettings}>
+//                 <label>
+//                   <input
+//                     type="checkbox"
+//                     checked={darkMode}
+//                     onChange={toggleTheme}
+//                   />
+//                   Dark Mode
+//                 </label>
+//               </div>
+//             </div>
+//             <div className={styles.settingsSection}>
+//               <h3>Real-time Updates</h3>
+//               <div className={styles.realtimeSettings}>
+//                 <p>Status: {socket ? 'Connected' : 'Disconnected'}</p>
+//                 {onlineAdmins.length > 0 && (
+//                   <div className={styles.adminList}>
+//                     <h4>Online Administrators:</h4>
+//                     <ul>
+//                       {onlineAdmins.map(admin => (
+//                         <li key={admin.id}>{admin.name || 'Admin'}</li>
+//                       ))}
+//                     </ul>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </main>
+//     </div>
+//   );
+// };
+
+// export default AdminDashboardPage;
+
+
+
+
+
+
+
+
+// -------------------Overview Extracted----------------------------------
+
+
+
+
+// import React, { useState, useEffect, lazy, Suspense } from 'react';
+// import { useThemeTrigger } from '../../../ThemeTrigger';
+// import * as SchoolApi from '../../../API/School_api';
+// import { useSocket } from '../../../SocketContext';
+// import styles from './AdminDashboardPage.module.css';
+
+// // Lazy load all components
+// const Overview = lazy(() => import('./Sections/overview/Overview'));
+// const MealsManagement = lazy(() => import('./Sections/Meal/Meal'));
+// const UsersManagement = lazy(() => import('./sections/User/User'));
+// const SchoolManagement = lazy(() => import('./Sections/School/School'));
+
+// const AdminDashboardPage = () => {
+//   const { darkMode, toggleTheme } = useThemeTrigger();
+//   const [activeTab, setActiveTab] = useState('overview');
+//   const [schools, setSchools] = useState([]);
+//   const [stats, setStats] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [editingUser, setEditingUser] = useState(null);
+//   const [showUserForm, setShowUserForm] = useState(false);
+//   const [error, setError] = useState('');
+
+//   // Get socket instance
+//   const socket = useSocket();
+//   const [notifications, setNotifications] = useState([]);
+//   const [onlineAdmins, setOnlineAdmins] = useState([]);
+
+//   useEffect(() => {
+//     fetchData();
+    
+//     // Set up socket listeners if socket is available
+//     if (socket) {
+//       // Listen for real-time school updates
+//       socket.on('school-updated', (updatedSchool) => {
+//         setSchools(prev => prev.map(school => 
+//           school._id === updatedSchool._id ? updatedSchool : school
+//         ));
+//         addNotification(`School "${updatedSchool.name}" was updated by another admin`);
+//       });
+      
+//       socket.on('school-created', (newSchool) => {
+//         setSchools(prev => [...prev, newSchool]);
+//         addNotification(`New school "${newSchool.name}" was created by another admin`);
+//       });
+      
+//       socket.on('school-deleted', (deletedSchoolId) => {
+//         setSchools(prev => prev.filter(school => school._id !== deletedSchoolId));
+//         addNotification('A school was deleted by another admin');
+//       });
+            
+//       // Listen for admin online status
+//       socket.on('admin-online', (adminData) => {
+//         setOnlineAdmins(prev => {
+//           if (!prev.find(admin => admin.id === adminData.id)) {
+//             return [...prev, adminData];
+//           }
+//           return prev;
+//         });
+//       });
+      
+//       socket.on('admin-offline', (adminId) => {
+//         setOnlineAdmins(prev => prev.filter(admin => admin.id !== adminId));
+//       });
+      
+//       socket.on('online-admins', (admins) => {
+//         setOnlineAdmins(admins);
+//       });
+      
+//       // Join admin room
+//       socket.emit('join-admin-room');
+      
+//       // Clean up listeners on unmount
+//       return () => {
+//         socket.off('school-updated');
+//         socket.off('school-created');
+//         socket.off('school-deleted');
+//         socket.off('admin-online');
+//         socket.off('admin-offline');
+//         socket.off('online-admins');
+//       };
+//     }
+//   }, [socket]);
+
+//   const fetchData = async () => {
+//     try {
+//       setLoading(true);
+//       setError('');
+//       const [schoolsResponse, statsResponse] = await Promise.all([
+//         SchoolApi.getSchools(),
+//         SchoolApi.getSchoolStats()
+//       ]);
+//       setSchools(schoolsResponse.data || []);
+//       setStats(statsResponse.data);
+//     } catch (error) {
+//       console.error('Error fetching data:', error);
+//       setError('Failed to fetch data: ' + (error.message || 'Please check your connection'));
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const addNotification = (message) => {
+//     const newNotification = {
+//       id: Date.now(),
+//       message,
+//       timestamp: new Date(),
+//       type: 'info'
+//     };
+    
+//     setNotifications(prev => [newNotification, ...prev.slice(0, 4)]);
+    
+//     setTimeout(() => {
+//       setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
+//     }, 5000);
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className={`${styles.adminDashboard} ${darkMode ? styles.dark : styles.light}`}>
+//         <div className={styles.loading}>Loading...</div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className={`${styles.adminDashboard} ${darkMode ? styles.dark : styles.light}`}>
+//       {/* Header */}
+//       <header className={styles.adminHeader}>
+//         <div className={styles.headerLeft}>
+//           <h1>Admin Dashboard</h1>
+//           {socket && (
+//             <div className={styles.connectionStatus}>
+//               <span className={styles.statusIndicator}></span>
+//               Real-time updates enabled
+//             </div>
+//           )}
+//         </div>
+//         <div className={styles.headerRight}>
+//           {onlineAdmins.length > 0 && (
+//             <div className={styles.onlineAdmins}>
+//               <span>{onlineAdmins.length} admin(s) online</span>
+//             </div>
+//           )}
+//         </div>
+//       </header>
+
+//       {/* Notifications */}
+//       {notifications.length > 0 && (
+//         <div className={styles.notificationsContainer}>
+//           {notifications.map(notification => (
+//             <div key={notification.id} className={styles.notification}>
+//               <span>{notification.message}</span>
+//               <button 
+//                 onClick={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))} 
+//                 className={styles.closeNotification}
+//               >
+//                 ×
+//               </button>
+//             </div>
+//           ))}
+//         </div>
+//       )}
+
+//       {/* Error Message */}
+//       {error && (
+//         <div className={styles.errorBanner}>
+//           <span>{error}</span>
+//           <button onClick={() => setError('')} className={styles.closeError}>×</button>
+//         </div>
+//       )}
+
+//       {/* Navigation */}
+//       <nav className={styles.adminNav}>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'overview' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('overview')}
+//         >
+//           Overview
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'schools' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('schools')}
+//         >
+//           Schools
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'meals' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('meals')}
+//         >
+//           Meals
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'users' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('users')}
+//         >
+//           Users
+//         </button>
+//         <button 
+//           className={`${styles.navButton} ${activeTab === 'settings' ? styles.active : ''}`}
+//           onClick={() => setActiveTab('settings')}
+//         >
+//           Settings
+//         </button>
+//       </nav>
+
+//       {/* Main Content */}
+//       <main className={styles.adminContent}>
+//         {/* Overview Tab - Lazy Loaded */}
+//         {activeTab === 'overview' && (
+//           <Suspense fallback={<div className={styles.loading}>Loading overview...</div>}>
+//             <Overview 
+//               darkMode={darkMode}
+//               stats={stats}
+//             />
+//           </Suspense>
+//         )}
+
+//         {/* Schools Tab - Lazy Loaded */}
+//         {activeTab === 'schools' && (
+//           <Suspense fallback={<div className={styles.loading}>Loading schools management...</div>}>
+//             <SchoolManagement 
+//               darkMode={darkMode}
+//               socket={socket}
+//               addNotification={addNotification}
+//               schools={schools}
+//               setSchools={setSchools}
+//               fetchData={fetchData}
+//             />
+//           </Suspense>
+//         )}
+
+//         {/* Meals Tab - Lazy Loaded */}
+//         {activeTab === 'meals' && (
+//           <Suspense fallback={<div className={styles.loading}>Loading meals...</div>}>
+//             <MealsManagement 
+//               darkMode={darkMode}
+//               socket={socket}
+//               addNotification={addNotification}
+//             />
+//           </Suspense>
+//         )}
+
+//         {/* Users Tab - Lazy Loaded */}
+//         {activeTab === 'users' && (
+//           <Suspense fallback={<div className={styles.loading}>Loading users...</div>}>
+//             <UsersManagement 
+//               darkMode={darkMode}
+//               socket={socket}
+//               addNotification={addNotification}
+//               showUserForm={showUserForm}
+//               setShowUserForm={setShowUserForm}
+//               editingUser={editingUser}
+//               setEditingUser={setEditingUser}
+//             />
+//           </Suspense>
+//         )}
+
+//         {/* Settings Tab */}
+//         {activeTab === 'settings' && (
+//           <div className={styles.settings}>
+//             <h2>Settings</h2>
+//             <div className={styles.settingsSection}>
+//               <h3>Theme Preferences</h3>
+//               <div className={styles.themeSettings}>
+//                 <label>
+//                   <input
+//                     type="checkbox"
+//                     checked={darkMode}
+//                     onChange={toggleTheme}
+//                   />
+//                   Dark Mode
+//                 </label>
+//               </div>
+//             </div>
+//             <div className={styles.settingsSection}>
+//               <h3>Real-time Updates</h3>
+//               <div className={styles.realtimeSettings}>
+//                 <p>Status: {socket ? 'Connected' : 'Disconnected'}</p>
+//                 {onlineAdmins.length > 0 && (
+//                   <div className={styles.adminList}>
+//                     <h4>Online Administrators:</h4>
+//                     <ul>
+//                       {onlineAdmins.map(admin => (
+//                         <li key={admin.id}>{admin.name || 'Admin'}</li>
+//                       ))}
+//                     </ul>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </main>
+//     </div>
+//   );
+// };
+
+// export default AdminDashboardPage;
+
+
+
+
+
+
+
+
+
+
+
+// ----------------------settings Extracted------------------------------------

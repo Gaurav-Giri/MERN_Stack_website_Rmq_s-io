@@ -1,0 +1,40 @@
+Config{
+    db.js
+}
+controllers{
+    authController.js
+
+}
+
+handler{
+    Shoolhandler.js
+    UserHandler.js
+}
+
+middleware{
+    auth.js
+}
+
+models{
+    School.js
+    user.js
+}
+
+routes{
+    authRoutes.js
+    schoolRoutes.js
+    userRoutes.js
+}
+
+Scripts{
+    seedSchool.js
+}
+
+utils{
+    mailer.js
+}
+
+.env
+package.json
+server.js
+socketHandler.js

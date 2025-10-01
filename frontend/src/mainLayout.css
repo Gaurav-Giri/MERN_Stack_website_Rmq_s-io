@@ -1,0 +1,12 @@
+/* Layout wrapper: full viewport height */
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* makes it stretch to full screen */
+}
+
+/* Main content expands to push footer down */
+.content {
+  flex: 1;
+}

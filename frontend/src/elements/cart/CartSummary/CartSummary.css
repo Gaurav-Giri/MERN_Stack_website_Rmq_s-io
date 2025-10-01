@@ -1,0 +1,132 @@
+
+
+/* CartSummary.css */
+.cart-summary {
+  position: relative;
+  background-color: white;
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.cart-summary.dark {
+  background-color: #2d3748;
+  color: #f7fafc;
+}
+
+.cart-summary h2 {
+  margin-bottom: 1.5rem;
+  color: inherit;
+}
+
+.order-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.school-info {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.school-info h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: var(--text-color);
+}
+
+.school-info p {
+  margin: 0;
+  color: var(--dark-gray);
+  font-size: 0.9rem;
+}
+
+.dark .school-info p {
+  color: #a0aec0;
+}
+
+.cart-items {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.empty-cart {
+  text-align: center;
+  padding: 1rem;
+  color: var(--dark-gray);
+}
+
+.dark .empty-cart {
+  color: #a0aec0;
+}
+
+.order-totals {
+  padding-top: 1rem;
+  border-top: 1px solid var(--light-gray);
+}
+
+.dark .order-totals {
+  border-top-color: #4a5568;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  color: inherit;
+}
+
+.grand-total {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--medium-gray);
+}
+
+.dark .grand-total {
+  border-top-color: #4a5568;
+}
+
+.terms-alert {
+  padding: 1rem;
+  background-color: #fff8e1;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #5c3b09;
+}
+
+.dark .terms-alert {
+  background-color: #443a24;
+  color: #f0e6d2;
+}
+
+.terms-alert p {
+  margin: 0.25rem 0;
+}
+
+.checkout-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--primary-color);
+  color:var(--text-color);
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.checkout-button:hover:not(:disabled) {
+  background-color: #3e8e41;
+}
+
+.checkout-button:disabled {
+  background-color: var(--medium-gray);
+  cursor: not-allowed;
+}
+
+.dark .checkout-button:disabled {
+  background-color: #4a5568;
+}

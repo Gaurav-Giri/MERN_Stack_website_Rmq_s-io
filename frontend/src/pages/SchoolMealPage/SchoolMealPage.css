@@ -1,0 +1,125 @@
+.school-meals-page {
+  padding: 0;
+  background-color: var(--background-color, #f8f9fa);
+  color: var(--text-color, #333);
+  min-height: 100vh;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.school-meals-page.dark {
+  --background-color: #1a1a1a;
+  --text-color: #f0f0f0;
+  --card-bg: #2d2d2d;
+  --border-color: #444;
+  --light-gray: #2d3748;
+  --medium-gray: #4a5568;
+  --dark-gray: #a0aec0;
+}
+
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.content-wrapper {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.meals-content {
+  flex: 1;
+  min-width: 0; /* Prevents flex item from overflowing */
+}
+
+.date-section {
+  background-color: var(--card-bg, white);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.date-section h2 {
+  margin-bottom: 15px;
+  color: var(--text-color);
+}
+
+.meals-section {
+  background-color: var(--card-bg, white);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.meals-section h2 {
+  margin-bottom: 20px;
+  color: var(--text-color);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color, #eee);
+}
+
+.no-meals {
+  padding: 2rem;
+  text-align: center;
+  color: var(--dark-gray, #7f8c8d);
+  background-color: var(--light-gray, #f8f9fa);
+  border-radius: 8px;
+  font-style: italic;
+}
+
+.cart-sidebar {
+  width: 350px;
+  flex-shrink: 0;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .content-wrapper {
+    flex-direction: column;
+  }
+  
+  .cart-sidebar {
+    width: 100%;
+    order: -1; /* Move cart to top on mobile */
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 0 15px;
+  }
+  
+  .date-section,
+  .meals-section {
+    padding: 15px;
+  }
+  
+  .date-section h2,
+  .meals-section h2 {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-wrapper {
+    gap: 15px;
+  }
+  
+  .date-section h2,
+  .meals-section h2 {
+    font-size: 1.1rem;
+  }
+}

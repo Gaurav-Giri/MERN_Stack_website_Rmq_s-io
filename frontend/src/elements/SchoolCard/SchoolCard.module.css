@@ -1,0 +1,254 @@
+/* .school-card {
+  background-color: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 100%;
+  border: 1px solid var(--card-border, #eaeaea);
+}
+
+.school-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.school-card a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+}
+
+.school-image {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+}
+
+.school-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.school-card:hover .school-image img {
+  transform: scale(1.05);
+}
+
+.school-info {
+  padding: 20px;
+}
+
+.school-info h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.4rem;
+  color: var(--text-primary, #2d3748);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  margin: 0 0 12px 0;
+  color: var(--text-secondary, #718096);
+  font-size: 0.95rem;
+}
+
+.location .icon {
+  margin-right: 8px;
+  font-size: 1rem;
+}
+
+.meals-available {
+  margin: 0 0 20px 0;
+  color: var(--accent-color, #4a5568);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.order-now-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  background-color: var(--primary-color, #4f46e5);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.order-now-btn:hover {
+  background-color: var(--primary-hover, #4338ca);
+  transform: translateY(-2px);
+}
+
+body.dark-mode .school-card {
+  --card-bg: #2d3748;
+  --card-border: #4a5568;
+  --text-primary: #f7fafc;
+  --text-secondary: #e2e8f0;
+  --accent-color: #a0aec0;
+  --primary-color: #6366f1;
+  --primary-hover: #818cf8;
+}
+
+@media (max-width: 768px) {
+  .school-image {
+    height: 160px;
+  }
+  
+  .school-info {
+    padding: 16px;
+  }
+  
+  .school-info h3 {
+    font-size: 1.2rem;
+  }
+  
+  .order-now-btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .school-image {
+    height: 140px;
+  }
+} */
+
+
+/* SchoolCard.module.css */
+.schoolCard {
+  background-color: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 100%;
+  border: 1px solid var(--card-border, #eaeaea);
+}
+
+.schoolCard.darkMode {
+  --card-bg: #2d3748;
+  --card-border: #4a5568;
+  --text-primary: #f7fafc;
+  --text-secondary: #e2e8f0;
+  --accent-color: #a0aec0;
+  --primary-color: #6366f1;
+  --primary-hover: #818cf8;
+}
+
+.schoolCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.schoolCard a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+}
+
+.schoolImage {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+}
+
+.schoolImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.schoolCard:hover .schoolImage img {
+  transform: scale(1.05);
+}
+
+.schoolInfo {
+  padding: 20px;
+}
+
+.schoolInfo h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.4rem;
+  color: var(--text-primary, #2d3748);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  margin: 0 0 12px 0;
+  color: var(--text-secondary, #718096);
+  font-size: 0.95rem;
+}
+
+.location .icon {
+  margin-right: 8px;
+  font-size: 1rem;
+}
+
+.mealsAvailable {
+  margin: 0 0 20px 0;
+  color: var(--accent-color, #4a5568);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.orderNowBtn {
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  background-color: var(--primary-color, #4f46e5);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.orderNowBtn:hover {
+  background-color: var(--primary-hover, #4338ca);
+  transform: translateY(-2px);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .schoolImage {
+    height: 160px;
+  }
+  
+  .schoolInfo {
+    padding: 16px;
+  }
+  
+  .schoolInfo h3 {
+    font-size: 1.2rem;
+  }
+  
+  .orderNowBtn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .schoolImage {
+    height: 140px;
+  }
+}

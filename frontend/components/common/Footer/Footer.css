@@ -1,0 +1,16 @@
+.footer-section{
+    display: grid;
+    justify-content: center;
+    align-items: center;
+}
+.footer-section h3 ,.footer-section p{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.footer-section li{
+    display: grid;
+    justify-content: center;
+    align-items: center;
+}

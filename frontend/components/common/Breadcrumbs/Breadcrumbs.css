@@ -1,0 +1,81 @@
+/* src/components/common/Breadcrumbs.css */
+/* .breadcrumbs {
+  display: flex;
+  align-items: flex-start;
+  padding: 0.4rem 0;
+  font-size: 0.9rem;
+  color: var(--dark-gray);
+}
+
+.breadcrumbs a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.breadcrumbs a:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  margin: 0 0.5rem;
+  color: var(--medium-gray);
+}
+
+.breadcrumb-active {
+  color: var(--text-color);
+  margin-left: 0.5rem;
+} */
+
+
+
+.breadcrumbs {
+  display: flex;
+  align-items: flex-start;
+  padding: 0.4rem 0;
+  font-size: 0.9rem;
+  color: var(--dark-gray);
+  transition: color 0.3s;
+}
+
+.breadcrumbs.dark {
+  color: #a0aec0;
+}
+
+.breadcrumbs a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.breadcrumbs a:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.dark .breadcrumbs a {
+  color: #63b3ed;
+}
+
+.dark .breadcrumbs a:hover {
+  color: #4299e1;
+}
+
+.breadcrumb-separator {
+  margin: 0 0.5rem;
+  color: var(--medium-gray);
+}
+
+.dark .breadcrumb-separator {
+  color: #718096;
+}
+
+.breadcrumb-active {
+  color: var(--text-color);
+  margin-left: 0.5rem;
+}
+
+.dark .breadcrumb-active {
+  color: #f7fafc;
+}

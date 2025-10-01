@@ -1,0 +1,484 @@
+/* vendorpage.module.css */
+.vendorPage {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.3s ease;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.vendorPage.dark {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
+/* Sidebar Styles */
+.sidebar {
+  width: 250px;
+  background-color: #2c3e50;
+  color: white;
+  padding: 20px 0;
+}
+
+.vendorPage.dark .sidebar {
+  background-color: #1e2a38;
+}
+
+.logo {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+}
+
+.logo h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav li {
+  margin: 5px 0;
+}
+
+.nav button {
+  width: 100%;
+  text-align: left;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  color: #bdc3c7;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 1rem;
+}
+
+.nav button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.nav button.active {
+  background-color: #3498db;
+  color: white;
+}
+
+.vendorPage.dark .nav button.active {
+  background-color: #2980b9;
+}
+
+/* Main Content Styles */
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.vendorPage.dark .header {
+  background-color: #2d3748;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.searchBar {
+  flex: 1;
+  max-width: 400px;
+}
+
+.searchBar input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.vendorPage.dark .searchBar input {
+  background-color: #4a5568;
+  border-color: #4a5568;
+  color: white;
+}
+
+.userMenu {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.notifications {
+  width: 24px;
+  height: 24px;
+  background-color: #ddd;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.vendorPage.dark .notifications {
+  background-color: #4a5568;
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #3498db;
+  border-radius: 50%;
+}
+
+.content {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+/* Dashboard Styles */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.statCard {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.vendorPage.dark .statCard {
+  background-color: #2d3748;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.statCard h3 {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.vendorPage.dark .statCard h3 {
+  color: #cbd5e0;
+}
+
+.statValue {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 5px;
+}
+
+.statTrend {
+  font-size: 0.8rem;
+  color: #27ae60;
+}
+
+.chartPlaceholder {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+}
+
+.vendorPage.dark .chartPlaceholder {
+  background-color: #2d3748;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.chart {
+  height: 300px;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  margin-top: 15px;
+}
+
+.vendorPage.dark .chart {
+  background-color: #4a5568;
+}
+
+/* Table Styles */
+.tableContainer {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.vendorPage.dark .tableContainer {
+  background-color: #2d3748;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ordersTable, .productsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ordersTable th, .ordersTable td,
+.productsTable th, .productsTable td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.vendorPage.dark .ordersTable th, 
+.vendorPage.dark .ordersTable td,
+.vendorPage.dark .productsTable th, 
+.vendorPage.dark .productsTable td {
+  border-bottom: 1px solid #4a5568;
+}
+
+.ordersTable th, .productsTable th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.vendorPage.dark .ordersTable th,
+.vendorPage.dark .productsTable th {
+  background-color: #4a5568;
+}
+
+/* Status Styles */
+.status {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status.pending {
+  background-color: #ffeaa7;
+  color: #d35400;
+}
+
+.vendorPage.dark .status.pending {
+  background-color: #d35400;
+  color: #ffeaa7;
+}
+
+.status.confirmed {
+  background-color: #d1f7c4;
+  color: #27ae60;
+}
+
+.vendorPage.dark .status.confirmed {
+  background-color: #27ae60;
+  color: #d1f7c4;
+}
+
+.status.rejected {
+  background-color: #ffd1d1;
+  color: #c0392b;
+}
+
+.vendorPage.dark .status.rejected {
+  background-color: #c0392b;
+  color: #ffd1d1;
+}
+
+.status.shipped {
+  background-color: #cce7ff;
+  color: #2980b9;
+}
+
+.vendorPage.dark .status.shipped {
+  background-color: #2980b9;
+  color: #cce7ff;
+}
+
+/* Button Styles */
+.actionButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.confirmBtn, .rejectBtn,
+.editBtn, .deleteBtn,
+.addProductBtn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.confirmBtn {
+  background-color: #27ae60;
+  color: white;
+}
+
+.confirmBtn:hover {
+  background-color: #219653;
+}
+
+.rejectBtn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.rejectBtn:hover {
+  background-color: #c0392b;
+}
+
+.editBtn {
+  background-color: #3498db;
+  color: white;
+}
+
+.editBtn:hover {
+  background-color: #2980b9;
+}
+
+.deleteBtn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.deleteBtn:hover {
+  background-color: #c0392b;
+}
+
+.addProductBtn {
+  background-color: #27ae60;
+  color: white;
+  padding: 10px 15px;
+}
+
+.addProductBtn:hover {
+  background-color: #219653;
+}
+
+/* Products Styles */
+.productsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.searchBox input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.vendorPage.dark .searchBox input {
+  background-color: #4a5568;
+  border-color: #4a5568;
+  color: white;
+}
+
+.productInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.productImage {
+  width: 40px;
+  height: 40px;
+  background-color: #ddd;
+  border-radius: 4px;
+}
+
+.vendorPage.dark .productImage {
+  background-color: #4a5568;
+}
+
+.lowStock {
+  color: #e74c3c;
+  font-weight: 500;
+}
+
+.inStock {
+  color: #27ae60;
+  font-weight: 500;
+}
+
+.productActions {
+  display: flex;
+  gap: 8px;
+}
+
+.placeholder {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.vendorPage.dark .placeholder {
+  background-color: #2d3748;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .vendorPage {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    padding: 10px 0;
+  }
+  
+  .nav ul {
+    display: flex;
+    overflow-x: auto;
+  }
+  
+  .nav li {
+    margin: 0;
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .productsHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .searchBar {
+    max-width: 100%;
+  }
+}

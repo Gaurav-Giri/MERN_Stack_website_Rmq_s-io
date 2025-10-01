@@ -1,0 +1,156 @@
+/* Login Page Container Styles */
+.loginPageContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  transition: all 0.3s ease;
+}
+
+.loginPageContainer h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #2c3e50;
+  text-align: center;
+}
+
+/* Shared Styles */
+.formButton {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.formButton:hover:not(:disabled) {
+  background-color: #2980b9;
+  transform: translateY(-1px);
+}
+
+.formButton:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.errorMessage, .successMessage {
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.errorMessage {
+  background-color: #feeaea;
+  color: #e53e3e;
+  border: 1px solid #fed7d7;
+}
+
+.successMessage {
+  background-color: #f0fff4;
+  color: #38a169;
+  border: 1px solid #c6f6d5;
+}
+
+/* Animation for form transitions */
+.formTransition {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark Mode Styles */
+:global(.dark-mode) .loginPageContainer {
+  background: linear-gradient(135deg, #232526 0%, #414345 100%);
+}
+
+:global(.dark-mode) .loginPageContainer h1 {
+  color: #ecf0f1;
+}
+
+:global(.dark-mode) .formButton:disabled {
+  background-color: #4a5568;
+}
+
+:global(.dark-mode) .errorMessage {
+  background-color: #742a2a;
+  color: #fc8181;
+  border-color: #742a2a;
+}
+
+:global(.dark-mode) .successMessage {
+  background-color: #22543d;
+  color: #68d391;
+  border-color: #22543d;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .loginPageContainer {
+    padding: 1rem;
+  }
+  
+  .loginPageContainer h1 {
+    font-size: 2rem;
+  }
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.formButton:disabled {
+  animation: pulse 1.5s infinite;
+}
+
+/* Focus styles for accessibility */
+.formButton:focus,
+input:focus {
+  outline: 2px solid #3498db;
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .formTransition {
+    animation: none;
+  }
+  
+  .formButton:hover:not(:disabled) {
+    transform: none;
+  }
+  
+  .formButton:disabled {
+    animation: none;
+  }
+}
