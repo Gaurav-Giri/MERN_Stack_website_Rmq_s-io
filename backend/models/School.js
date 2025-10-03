@@ -37,7 +37,7 @@
 
 
 import mongoose from 'mongoose';
-
+import Meal from './Meal.js'
 const schoolSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -55,7 +55,7 @@ const schoolSchema = new mongoose.Schema({
   },
   mealOptions: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Meal' // Reference to the Meal model
+    ref: Meal // Reference to the Meal model
   }],
   image: {
     type: String,

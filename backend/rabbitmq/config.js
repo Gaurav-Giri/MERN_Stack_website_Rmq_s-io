@@ -51,6 +51,10 @@ export const EXCHANGES = {
   USER: 'user_exchange',
   MEAL: 'meal_exchange',
   NOTIFICATION: 'notification_exchange',
+  CONTENT:'content_exchange',
+  ADMIN:'admin_exchange',
+  VENDOR:'vendor_exchange',
+  ORDER:'order_exchange',
 };
 
 export const QUEUES = {
@@ -58,6 +62,10 @@ export const QUEUES = {
   USER_EVENTS: 'user_events_queue',
   MEAL_EVENTS: 'meal_events_queue',
   NOTIFICATION_EVENTS: 'notification_events_queue',
+  CONTENT_EVENTS:'content_events_queue',
+  ADMIN_EVENTS:'admin_events_queue',
+  VENDOR_EVENTS:'vendor_events_queue',
+  ORDER_EVENTS:'order_events_queue',
 };
 
 export { rabbitMQ };
