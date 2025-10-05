@@ -243,6 +243,7 @@ import userRoutes from "./routes/UserRoutes.js";
 import VendorRoutes from "./routes/VendorRoutes.js";
 import MealRoutes from "./routes/MealRoutes.js";
 import AdminRoutes from "./routes/AdminRoutes.js"
+import HeaderRoutes from "./routes/ContentRoutes/HeaderRoutes.js"
 // import NotificationRoutes from './routes/NotificationRoutes.js';
 
 // Socket handler
@@ -253,7 +254,7 @@ import MessageConsumer from "./rabbitmq/messageConsumer.js";
 import UserConsumer from "./rabbitmq/consumer/UserConsumer.js";
 import SchoolConsumer from "./rabbitmq/consumer/SchoolConsumer.js";
 import MealConsumer from "./rabbitmq/consumer/MealConsumer.js";
-
+import HeaderConsumer from "./rabbitmq/consumer/ContentConsumer/HeaderConsumer.js";
 const app = express();
 const server = http.createServer(app);
 
@@ -298,6 +299,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/meals", MealRoutes);
 app.use("/api/vendor", VendorRoutes);
 app.use("/api/admin", AdminRoutes);
+app.use("/api/headerApi", HeaderRoutes);
 // app.use("/api/notifications",NotificationRoutes);
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -332,6 +334,7 @@ const initializeConsumers = async () => {
     const userConsumer = new UserConsumer(io);
     const schoolConsumer = new SchoolConsumer(io);
     const mealConsumer = new MealConsumer(io);
+    const headerConsumer = new HeaderConsumer(io);
 
     // Initialize all consumers
     console.log('🔄 Initializing RabbitMQ consumers...');
@@ -340,7 +343,8 @@ const initializeConsumers = async () => {
       messageConsumer.initialize(),
       userConsumer.initialize(),
       schoolConsumer.initialize(),
-      mealConsumer.initialize()
+      mealConsumer.initialize(),
+      headerConsumer.initialize()
     ]);
 
     console.log('✅ All RabbitMQ consumers initialized');
@@ -352,7 +356,8 @@ const initializeConsumers = async () => {
       messageConsumer.startConsuming(),
       userConsumer.startConsuming(),
       schoolConsumer.startConsuming(),
-      mealConsumer.startConsuming()
+      mealConsumer.startConsuming(),
+      headerConsumer.startConsuming()
     ]);
 
     console.log('🎯 All message consumers are running');

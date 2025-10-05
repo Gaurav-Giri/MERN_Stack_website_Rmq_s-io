@@ -103,7 +103,7 @@ import MealHandler from './handler/MealHandler.js';
 // import NotificationHandler from './handler/NotificationHandler.js';
 // import OrderHandler from './handler/OrderHandler.js';
 // import ContentHandler from './handler/ContentHandler/ContentHandler.js';
-
+import HeaderHandler from './handler/ContentHandler/HeaderHandler.js'
 
 
 //rabbitmq Producer 
@@ -149,6 +149,7 @@ const setupSocketHandlers = async (io) => {
     // NotificationHandler(socket, MessageProducer, connectedAdmins);
     // OrderHandler(socket, MessageProducer, connectedAdmins);
     // ContentHandler(socket, MessageProducer, connectedAdmins);
+    HeaderHandler(socket, MessageProducer, connectedAdmins);
     
 
     // Handle disconnection
