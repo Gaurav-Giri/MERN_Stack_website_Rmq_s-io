@@ -15,7 +15,7 @@ export const getHeader = async () => {
 // Create header content (admin only)
 export const createHeader = async (headerData) => {
   try {
-    const res = await API.post("/header", headerData);
+    const res = await API.post("/headerApi", headerData);
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to create header content");
@@ -25,7 +25,7 @@ export const createHeader = async (headerData) => {
 // Update header content (admin only)
 export const updateHeader = async (updates) => {
   try {
-    const res = await API.put("/header", { updates });
+    const res = await API.put("/headerApi", { updates });
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to update header content");
@@ -35,7 +35,7 @@ export const updateHeader = async (updates) => {
 // Add navigation link (admin only)
 export const addHeaderLink = async (linkData) => {
   try {
-    const res = await API.post("/header/links", linkData);
+    const res = await API.post("/headerApi/links", linkData);
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to add navigation link");
@@ -45,7 +45,7 @@ export const addHeaderLink = async (linkData) => {
 // Update navigation link (admin only)
 export const updateHeaderLink = async (linkId, linkData) => {
   try {
-    const res = await API.put(`/header/links/${linkId}`, linkData);
+    const res = await API.put(`/headerApi/links/${linkId}`, linkData);
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to update navigation link");
@@ -55,7 +55,7 @@ export const updateHeaderLink = async (linkId, linkData) => {
 // Delete navigation link (admin only)
 export const deleteHeaderLink = async (linkId) => {
   try {
-    const res = await API.delete(`/header/links/${linkId}`);
+    const res = await API.delete(`/headerApi/links/${linkId}`);
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to delete navigation link");
@@ -65,7 +65,7 @@ export const deleteHeaderLink = async (linkId) => {
 // Update logo (admin only)
 export const updateHeaderLogo = async (logoData) => {
   try {
-    const res = await API.patch("/header/logo", logoData);
+    const res = await API.patch("/headerApi/logo", logoData);
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to update logo");
@@ -75,7 +75,7 @@ export const updateHeaderLogo = async (logoData) => {
 // Update theme settings (admin only)
 export const updateHeaderThemeSettings = async (themeSettings) => {
   try {
-    const res = await API.patch("/header/theme-settings", themeSettings);
+    const res = await API.patch("/headerApi/theme-settings", themeSettings);
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to update theme settings");
@@ -85,7 +85,7 @@ export const updateHeaderThemeSettings = async (themeSettings) => {
 // Reorder navigation links (admin only)
 export const reorderHeaderLinks = async (linksOrder) => {
   try {
-    const res = await API.patch("/header/reorder-links", { linksOrder });
+    const res = await API.patch("/headerApi/reorder-links", { linksOrder });
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to reorder navigation links");
@@ -95,7 +95,7 @@ export const reorderHeaderLinks = async (linksOrder) => {
 // Toggle link status (admin only)
 export const toggleHeaderLinkStatus = async (linkId) => {
   try {
-    const res = await API.patch(`/header/links/${linkId}/toggle-status`);
+    const res = await API.patch(`/headerApi/links/${linkId}/toggle-status`);
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to toggle link status");
@@ -105,7 +105,7 @@ export const toggleHeaderLinkStatus = async (linkId) => {
 // Get header statistics
 export const getHeaderStats = async () => {
   try {
-    const res = await API.get("/header/stats/overview");
+    const res = await API.get("/headerApi/stats/overview");
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to fetch header statistics");

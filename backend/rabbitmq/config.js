@@ -56,6 +56,7 @@ export const EXCHANGES = {
   VENDOR:'vendor_exchange',
   ORDER:'order_exchange',
   HEADER:'Header_exchange',
+  FOOTER:'Footer_exchange',
 };
 
 export const QUEUES = {
@@ -68,7 +69,7 @@ export const QUEUES = {
   VENDOR_EVENTS:'vendor_events_queue',
   ORDER_EVENTS:'order_events_queue',
   HEADER_EVENTS:'header_events_queue',
-  
+  FOOTER_EVENTS:'footer_events_queue',
 };
 
 export { rabbitMQ };
