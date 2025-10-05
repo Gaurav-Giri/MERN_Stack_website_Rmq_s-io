@@ -60,7 +60,7 @@ const footerContentSchema = new mongoose.Schema({
   },
   copyrightText: {
     type: String,
-    default: '© 2023 School Lunch Box. All rights reserved.'
+    default: '© 2025 School Lunch Box. All rights reserved.'
   },
   themeSettings: {
     allowThemeToggle: {

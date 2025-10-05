@@ -144,6 +144,12 @@ const setupSocketHandlers = async (io) => {
     SchoolHandler(socket, MessageProducer, connectedAdmins);
     UserHandler(socket, MessageProducer, connectedAdmins);
     MealHandler(socket, MessageProducer, connectedAdmins);
+    // AdminHandler(socket, MessageProducer, connectedAdmins);
+    // VendorHandler(socket, MessageProducer, connectedAdmins);
+    // NotificationHandler(socket, MessageProducer, connectedAdmins);
+    // OrderHandler(socket, MessageProducer, connectedAdmins);
+    // ContentHandler(socket, MessageProducer, connectedAdmins);
+    
 
     // Handle disconnection
     socket.on('disconnect', () => {

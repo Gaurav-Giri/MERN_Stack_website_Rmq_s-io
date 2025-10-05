@@ -14,6 +14,8 @@ class MessageProducer {
       await channel.assertExchange(EXCHANGES.USER, 'fanout', { durable: true });
       await channel.assertExchange(EXCHANGES.MEAL, 'fanout', { durable: true });
       await channel.assertExchange(EXCHANGES.NOTIFICATION, 'fanout', { durable: true });
+      await channel.assertExchange(EXCHANGES.HEADER, 'fanout', { durable: true });
+
       
       this.initialized = true;
       console.log('✅ MessageProducer initialized');
@@ -59,6 +61,10 @@ class MessageProducer {
 
   async publishNotificationEvent(event, data, socketId = null) {
     return this.publishToExchange(EXCHANGES.NOTIFICATION, { event, data, socketId });
+  }
+
+  async publishHeaderEvent(event, data, socketId = null){
+    return this.publishToExchange(EXCHANGES.HEADER, { event, data, socketId});
   }
 }
 

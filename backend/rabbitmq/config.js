@@ -55,6 +55,7 @@ export const EXCHANGES = {
   ADMIN:'admin_exchange',
   VENDOR:'vendor_exchange',
   ORDER:'order_exchange',
+  HEADER:'Header_exchange',
 };
 
 export const QUEUES = {
@@ -66,6 +67,8 @@ export const QUEUES = {
   ADMIN_EVENTS:'admin_events_queue',
   VENDOR_EVENTS:'vendor_events_queue',
   ORDER_EVENTS:'order_events_queue',
+  HEADER_EVENTS:'header_events_queue',
+  
 };
 
 export { rabbitMQ };
