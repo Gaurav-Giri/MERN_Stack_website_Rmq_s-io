@@ -245,7 +245,7 @@ import MealRoutes from "./routes/MealRoutes.js";
 import AdminRoutes from "./routes/AdminRoutes.js"
 import HeaderRoutes from "./routes/ContentRoutes/HeaderRoutes.js";
 import FooterRoutes from "./routes/ContentRoutes/FooterRoutes.js";
-// import NotificationRoutes from './routes/NotificationRoutes.js';
+import NotificationRoutes from './routes/NotificationRoutes.js';
 
 // Socket handler
 import SocketHandler from "./SocketHandler.js";
@@ -257,6 +257,7 @@ import SchoolConsumer from "./rabbitmq/consumer/SchoolConsumer.js";
 import MealConsumer from "./rabbitmq/consumer/MealConsumer.js";
 import HeaderConsumer from "./rabbitmq/consumer/ContentConsumer/HeaderConsumer.js";
 import FooterConsumer from "./rabbitmq/consumer/ContentConsumer/Footerconsumer.js";
+import NotificationConsumer from "./rabbitmq/consumer/NotificationConsumer.js";
 const app = express();
 const server = http.createServer(app);
 
@@ -303,7 +304,7 @@ app.use("/api/vendor", VendorRoutes);
 app.use("/api/admin", AdminRoutes);
 app.use("/api/headerApi", HeaderRoutes);
 app.use("/api/footerApi", FooterRoutes);
-// app.use("/api/notifications",NotificationRoutes);
+app.use("/api/notifications",NotificationRoutes);
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
@@ -339,6 +340,7 @@ const initializeConsumers = async () => {
     const mealConsumer = new MealConsumer(io);
     const headerConsumer = new HeaderConsumer(io);
     const footerConsumer = new FooterConsumer(io);
+    const notificationConsumer = new NotificationConsumer(io);
 
     // Initialize all consumers
     console.log('🔄 Initializing RabbitMQ consumers...');
@@ -349,7 +351,8 @@ const initializeConsumers = async () => {
       schoolConsumer.initialize(),
       mealConsumer.initialize(),
       headerConsumer.initialize(),
-      footerConsumer.initialize()
+      footerConsumer.initialize(),
+      notificationConsumer.initialize()
     ]);
 
     console.log('✅ All RabbitMQ consumers initialized');
@@ -363,7 +366,9 @@ const initializeConsumers = async () => {
       schoolConsumer.startConsuming(),
       mealConsumer.startConsuming(),
       headerConsumer.startConsuming(),
-      footerConsumer.startConsuming()
+      footerConsumer.startConsuming(),
+      notificationConsumer.startConsuming()
+
     ]);
 
     console.log('🎯 All message consumers are running');

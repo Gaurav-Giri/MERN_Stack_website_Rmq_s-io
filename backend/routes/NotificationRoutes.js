@@ -1,101 +1,57 @@
-// import express from 'express';
-
-// import auth from '../middleware/auth.js';
-// import NotificationHandler from '../handler/NotificationHandler.js';
-// const router = express.Router();
-// // Get all notifications for authenticated user
-// router.get('/', auth, async (req, res) => {
-//   try {
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = parseInt(req.query.limit) || 20;
-    
-//     const result = await NotificationHandler.getUserNotifications(req.user.id, page, limit);
-//     res.json(result);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
-
-// // Get unread count
-// router.get('/unread-count', auth, async (req, res) => {
-//   try {
-//     const result = await NotificationHandler.getUnreadCount(req.user.id);
-//     res.json(result);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
-
-// // Mark notification as read
-// router.put('/:id/read', auth, async (req, res) => {
-//   try {
-//     const result = await NotificationHandler.markAsRead(req.params.id, req.user.id);
-//     res.json(result);
-//   } catch (error) {
-//     if (error.message === 'Notification not found') {
-//       return res.status(404).json({ error: error.message });
-//     }
-//     res.status(500).json({ error: error.message });
-//   }
-// });
-
-// // Mark all as read
-// router.put('/mark-all-read', auth, async (req, res) => {
-//   try {
-//     const result = await NotificationHandler.markAllAsRead(req.user.id);
-//     res.json(result);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
-
-// // Delete notification
-// router.delete('/:id', auth, async (req, res) => {
-//   try {
-//     const result = await NotificationHandler.deleteNotification(req.params.id, req.user.id);
-//     res.json(result);
-//   } catch (error) {
-//     if (error.message === 'Notification not found') {
-//       return res.status(404).json({ error: error.message });
-//     }
-//     res.status(500).json({ error: error.message });
-//   }
-// });
-
-// // module.exports = router;
-
-// export default router;
-
-
-
-
-
-
+// routes/NotificationRoutes.js
 import express from 'express';
 import Notification from '../models/Notification.js';
-import auth from '../middleware/auth.js';
+import MessageProducer from '../rabbitmq/messageProducer.js';
 
 const router = express.Router();
 
-// GET all notifications for authenticated user (with pagination)
-router.get('/', auth, async (req, res) => {
+// GET all notifications for a user (with pagination and filters)
+router.get('/user/:userId', async (req, res) => {
   try {
+    const { userId } = req.params;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
+    
+    // Build filter object
+    const filters = { user: userId };
+    
+    // Type filter
+    if (req.query.type) {
+      filters.type = req.query.type;
+    }
+    
+    // Read status filter
+    if (req.query.read !== undefined) {
+      filters.read = req.query.read === 'true';
+    }
+    
+    // Priority filter
+    if (req.query.priority) {
+      filters.priority = req.query.priority;
+    }
+    
+    // Date range filter
+    if (req.query.startDate) {
+      filters.createdAt = { $gte: new Date(req.query.startDate) };
+    }
+    if (req.query.endDate) {
+      filters.createdAt = { 
+        ...filters.createdAt, 
+        $lte: new Date(req.query.endDate) 
+      };
+    }
 
-    const notifications = await Notification.find({ user: req.user.id })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('user', 'name email');
-
-    const total = await Notification.countDocuments({ user: req.user.id });
-    const unreadCount = await Notification.countDocuments({ 
-      user: req.user.id, 
-      read: false 
-    });
-
+    const [notifications, total, unreadCount] = await Promise.all([
+      Notification.find(filters)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('user', 'name email'),
+      Notification.countDocuments(filters),
+      Notification.countDocuments({ ...filters, read: false })
+    ]);
+    
     res.json({ 
       success: true, 
       data: notifications,
@@ -103,97 +59,46 @@ router.get('/', auth, async (req, res) => {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit),
-        unreadCount
+        unreadCount,
+        pages: Math.ceil(total / limit)
       }
     });
   } catch (error) {
-    console.error('Error fetching notifications:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error' 
-    });
+    console.error('Error fetching user notifications:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
-// GET unread notifications count
-router.get('/stats/unread-count', auth, async (req, res) => {
+// GET notification statistics for admin
+router.get('/admin/stats/overview', async (req, res) => {
   try {
-    const count = await Notification.countDocuments({ 
-      user: req.user.id, 
-      read: false 
-    });
-
-    res.json({ 
-      success: true, 
-      data: { unreadCount: count }
-    });
-  } catch (error) {
-    console.error('Error fetching unread count:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error' 
-    });
-  }
-});
-
-// GET notifications by filter (read/unread)
-router.get('/filter', auth, async (req, res) => {
-  try {
-    const filters = { user: req.user.id };
+    const totalNotifications = await Notification.countDocuments();
+    const unreadCount = await Notification.countDocuments({ read: false });
     
-    if (req.query.read !== undefined) {
-      filters.read = req.query.read === 'true';
-    }
-    if (req.query.type) {
-      filters.type = req.query.type;
-    }
-    if (req.query.priority) {
-      filters.priority = req.query.priority;
-    }
-
-    const notifications = await Notification.find(filters)
-      .sort({ createdAt: -1 })
-      .populate('user', 'name email');
-
-    res.json({ 
-      success: true, 
-      data: notifications 
-    });
-  } catch (error) {
-    console.error('Error filtering notifications:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error' 
-    });
-  }
-});
-
-// GET notification statistics
-router.get('/stats/overview', auth, async (req, res) => {
-  try {
-    const totalNotifications = await Notification.countDocuments({ 
-      user: req.user.id 
-    });
-    
-    const unreadCount = await Notification.countDocuments({ 
-      user: req.user.id, 
-      read: false 
-    });
-
     const notificationsByType = await Notification.aggregate([
-      { $match: { user: req.user.id } },
       { $group: { _id: '$type', count: { $sum: 1 } } }
     ]);
     
     const notificationsByPriority = await Notification.aggregate([
-      { $match: { user: req.user.id } },
       { $group: { _id: '$priority', count: { $sum: 1 } } }
     ]);
 
-    const recentActivity = await Notification.find({ user: req.user.id })
+    const notificationsByDay = await Notification.aggregate([
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: -1 } },
+      { $limit: 30 }
+    ]);
+
+    const recentNotifications = await Notification.find()
       .sort({ createdAt: -1 })
-      .limit(5)
+      .limit(10)
       .populate('user', 'name email');
 
     res.json({
@@ -204,22 +109,79 @@ router.get('/stats/overview', auth, async (req, res) => {
         readCount: totalNotifications - unreadCount,
         notificationsByType,
         notificationsByPriority,
-        recentActivity
+        notificationsByDay,
+        recentNotifications
       }
     });
   } catch (error) {
     console.error('Error fetching notification statistics:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error' 
-    });
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// GET notifications by search query (admin)
+router.get('/admin/search', async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q || q.trim() === '') {
+      const notifications = await Notification.find()
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .populate('user', 'name email');
+      return res.json({ success: true, data: notifications });
+    }
+    
+    const notifications = await Notification.find({
+      $or: [
+        { message: { $regex: q, $options: 'i' } },
+        { type: { $regex: q, $options: 'i' } }
+      ]
+    })
+    .sort({ createdAt: -1 })
+    .limit(50)
+    .populate('user', 'name email');
+    
+    res.json({ success: true, data: notifications });
+  } catch (error) {
+    console.error('Error searching notifications:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// GET notifications by filter (admin)
+router.get('/admin/filter', async (req, res) => {
+  try {
+    const filters = {};
+    
+    if (req.query.type) filters.type = req.query.type;
+    if (req.query.priority) filters.priority = req.query.priority;
+    if (req.query.read !== undefined) filters.read = req.query.read === 'true';
+    
+    if (req.query.startDate) {
+      filters.createdAt = { $gte: new Date(req.query.startDate) };
+    }
+    if (req.query.endDate) {
+      filters.createdAt = { 
+        ...filters.createdAt, 
+        $lte: new Date(req.query.endDate) 
+      };
+    }
+
+    const notifications = await Notification.find(filters)
+      .sort({ createdAt: -1 })
+      .populate('user', 'name email');
+
+    res.json({ success: true, data: notifications });
+  } catch (error) {
+    console.error('Error filtering notifications:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
 // GET single notification by ID
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    // Validate if ID is a valid MongoDB ObjectId
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ 
         success: false, 
@@ -227,22 +189,16 @@ router.get('/:id', auth, async (req, res) => {
       });
     }
 
-    const notification = await Notification.findOne({ 
-      _id: req.params.id, 
-      user: req.user.id 
-    }).populate('user', 'name email');
-
+    const notification = await Notification.findById(req.params.id)
+      .populate('user', 'name email');
+      
     if (!notification) {
       return res.status(404).json({ 
         success: false, 
         message: 'Notification not found' 
       });
     }
-
-    res.json({ 
-      success: true, 
-      data: notification 
-    });
+    res.json({ success: true, data: notification });
   } catch (error) {
     console.error('Error fetching notification:', error);
     res.status(500).json({ 
@@ -252,10 +208,98 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// PUT mark notification as read
-router.put('/:id/read', auth, async (req, res) => {
+// POST create new notification
+router.post('/', async (req, res) => {
   try {
-    // Validate if ID is a valid MongoDB ObjectId
+    const { user, message, type, relatedId, priority } = req.body;
+    
+    if (!user || !message) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Missing required fields: user, message' 
+      });
+    }
+
+    const notification = new Notification({
+      user,
+      message: message.trim(),
+      type: type || 'system',
+      relatedId: relatedId || null,
+      priority: priority || 'medium',
+      read: false
+    });
+
+    const newNotification = await notification.save();
+    await newNotification.populate('user', 'name email');
+    
+    // Publish to RabbitMQ for real-time delivery
+    await MessageProducer.publishNotificationEvent('notification_created', {
+      notification: newNotification,
+      createdVia: 'http'
+    });
+    
+    res.status(201).json({ success: true, data: newNotification });
+  } catch (error) {
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ success: false, message: errors.join(', ') });
+    }
+    console.error('Error creating notification:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// POST send notification to multiple users (bulk)
+router.post('/bulk', async (req, res) => {
+  try {
+    const { userIds, message, type, relatedId, priority } = req.body;
+    
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0 || !message) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Missing required fields: userIds (array), message' 
+      });
+    }
+
+    const notifications = await Promise.all(
+      userIds.map(userId => 
+        new Notification({
+          user: userId,
+          message: message.trim(),
+          type: type || 'system',
+          relatedId: relatedId || null,
+          priority: priority || 'medium',
+          read: false
+        }).save()
+      )
+    );
+
+    // Publish to RabbitMQ for real-time delivery to all users
+    await MessageProducer.publishNotificationEvent('bulk_notifications_sent', {
+      userIds,
+      notification: {
+        message: message.trim(),
+        type: type || 'system',
+        priority: priority || 'medium',
+        relatedId: relatedId || null
+      },
+      sentVia: 'http'
+    });
+    
+    res.status(201).json({ 
+      success: true, 
+      message: `Notifications sent to ${userIds.length} users`,
+      data: notifications 
+    });
+  } catch (error) {
+    console.error('Error sending bulk notifications:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// PUT update notification
+router.put('/:id', async (req, res) => {
+  try {
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ 
         success: false, 
@@ -263,12 +307,9 @@ router.put('/:id/read', auth, async (req, res) => {
       });
     }
 
-    const notification = await Notification.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id },
-      { read: true },
-      { new: true }
-    ).populate('user', 'name email');
-
+    const { message, type, priority, read } = req.body;
+    
+    const notification = await Notification.findById(req.params.id);
     if (!notification) {
       return res.status(404).json({ 
         success: false, 
@@ -276,18 +317,69 @@ router.put('/:id/read', auth, async (req, res) => {
       });
     }
 
-    // Emit socket event for real-time update
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`user_${req.user.id}`).emit('notification-marked-read', { 
-        notification 
+    // Update fields
+    if (message) notification.message = message.trim();
+    if (type) notification.type = type;
+    if (priority) notification.priority = priority;
+    if (read !== undefined) notification.read = read;
+
+    const updatedNotification = await notification.save();
+    await updatedNotification.populate('user', 'name email');
+    
+    // Publish to RabbitMQ for real-time updates
+    await MessageProducer.publishNotificationEvent('notification_updated', {
+      notification: updatedNotification,
+      updatedVia: 'http'
+    });
+    
+    res.json({ success: true, data: updatedNotification });
+  } catch (error) {
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ success: false, message: errors.join(', ') });
+    }
+    console.error('Error updating notification:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error' 
+    });
+  }
+});
+
+// PATCH mark notification as read
+router.patch('/:id/read', async (req, res) => {
+  try {
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid notification ID format' 
       });
     }
 
+    const notification = await Notification.findById(req.params.id);
+    
+    if (!notification) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Notification not found' 
+      });
+    }
+
+    notification.read = true;
+    const updatedNotification = await notification.save();
+    await updatedNotification.populate('user', 'name email');
+    
+    // Publish to RabbitMQ for real-time updates
+    await MessageProducer.publishNotificationEvent('notification_marked_read', {
+      notification: updatedNotification,
+      userId: updatedNotification.user._id,
+      markedVia: 'http'
+    });
+    
     res.json({ 
       success: true, 
-      data: { notification },
-      message: 'Notification marked as read'
+      message: 'Notification marked as read',
+      data: updatedNotification
     });
   } catch (error) {
     console.error('Error marking notification as read:', error);
@@ -298,31 +390,26 @@ router.put('/:id/read', auth, async (req, res) => {
   }
 });
 
-// PUT mark all notifications as read
-router.put('/actions/mark-all-read', auth, async (req, res) => {
+// PATCH mark all user notifications as read
+router.patch('/user/:userId/read-all', async (req, res) => {
   try {
-    await Notification.updateMany(
-      { user: req.user.id, read: false },
+    const { userId } = req.params;
+
+    const result = await Notification.updateMany(
+      { user: userId, read: false },
       { read: true }
     );
 
-    const unreadCount = await Notification.countDocuments({ 
-      user: req.user.id, 
-      read: false 
+    // Publish to RabbitMQ for real-time updates
+    await MessageProducer.publishNotificationEvent('all_notifications_marked_read', {
+      userId,
+      count: result.modifiedCount,
+      markedVia: 'http'
     });
-
-    // Emit socket event for real-time update
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`user_${req.user.id}`).emit('all-notifications-marked-read', { 
-        unreadCount 
-      });
-    }
-
+    
     res.json({ 
       success: true, 
-      data: { unreadCount },
-      message: 'All notifications marked as read'
+      message: `${result.modifiedCount} notifications marked as read`
     });
   } catch (error) {
     console.error('Error marking all notifications as read:', error);
@@ -333,10 +420,9 @@ router.put('/actions/mark-all-read', auth, async (req, res) => {
   }
 });
 
-// DELETE notification 
-router.delete('/:id', auth, async (req, res) => {
+// DELETE notification
+router.delete('/:id', async (req, res) => {
   try {
-    // Validate if ID is a valid MongoDB ObjectId
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ 
         success: false, 
@@ -344,11 +430,8 @@ router.delete('/:id', auth, async (req, res) => {
       });
     }
 
-    const notification = await Notification.findOneAndDelete({ 
-      _id: req.params.id, 
-      user: req.user.id 
-    });
-
+    const notification = await Notification.findById(req.params.id);
+    
     if (!notification) {
       return res.status(404).json({ 
         success: false, 
@@ -356,17 +439,18 @@ router.delete('/:id', auth, async (req, res) => {
       });
     }
 
-    // Emit socket event for real-time update
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`user_${req.user.id}`).emit('notification-deleted', { 
-        notificationId: req.params.id 
-      });
-    }
-
+    await Notification.findByIdAndDelete(req.params.id);
+    
+    // Publish to RabbitMQ for real-time updates
+    await MessageProducer.publishNotificationEvent('notification_deleted', {
+      notificationId: req.params.id,
+      userId: notification.user,
+      deletedVia: 'http'
+    });
+    
     res.json({ 
       success: true, 
-      message: 'Notification deleted successfully' 
+      message: 'Notification deleted successfully'
     });
   } catch (error) {
     console.error('Error deleting notification:', error);
@@ -377,70 +461,29 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-// POST create new notification (admin functionality)
-router.post('/', auth, async (req, res) => {
+// DELETE all read notifications for a user
+router.delete('/user/:userId/read', async (req, res) => {
   try {
-    // Check if user has admin privileges
-    if (!req.user.isAdmin) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Access denied. Admin privileges required.' 
-      });
-    }
+    const { userId } = req.params;
 
-    const { userId, message, type = 'system', relatedId = null, priority = 'medium' } = req.body;
-    
-    // Validate required fields
-    if (!userId || !message) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Missing required fields: userId, message' 
-      });
-    }
-
-    const notification = new Notification({
+    const result = await Notification.deleteMany({
       user: userId,
-      message: message.trim(),
-      type,
-      relatedId,
-      priority,
-      read: false
+      read: true
     });
 
-    const newNotification = await notification.save();
-    await newNotification.populate('user', 'name email');
-
-    const notificationData = {
-      _id: newNotification._id,
-      message: newNotification.message,
-      type: newNotification.type,
-      read: newNotification.read,
-      priority: newNotification.priority,
-      createdAt: newNotification.createdAt,
-      relatedId: newNotification.relatedId,
-      user: newNotification.user
-    };
-
-    // Emit socket event for real-time notification
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`user_${userId}`).emit('new-notification', notificationData);
-    }
-
-    res.status(201).json({ 
+    // Publish to RabbitMQ for real-time updates
+    await MessageProducer.publishNotificationEvent('read_notifications_cleared', {
+      userId,
+      count: result.deletedCount,
+      clearedVia: 'http'
+    });
+    
+    res.json({ 
       success: true, 
-      data: newNotification,
-      message: 'Notification sent successfully'
+      message: `${result.deletedCount} read notifications deleted`
     });
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      const errors = Object.values(error.errors).map(err => err.message);
-      return res.status(400).json({ 
-        success: false, 
-        message: errors.join(', ') 
-      });
-    }
-    console.error('Error creating notification:', error);
+    console.error('Error deleting read notifications:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Internal server error' 

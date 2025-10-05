@@ -100,7 +100,7 @@ import UserHandler from './handler/UserHandler.js';
 import MealHandler from './handler/MealHandler.js';
 // import VendorHandler from './handler/VendorHanadler.js';
 // import AdminHandler from './handler/AdminHandler.js';
-// import NotificationHandler from './handler/NotificationHandler.js';
+import NotificationHandler from './handler/NotificationHandler.js';
 // import OrderHandler from './handler/OrderHandler.js';
 // import ContentHandler from './handler/ContentHandler/ContentHandler.js';
 import HeaderHandler from './handler/ContentHandler/HeaderHandler.js';
@@ -147,7 +147,7 @@ const setupSocketHandlers = async (io) => {
     MealHandler(socket, MessageProducer, connectedAdmins);
     // AdminHandler(socket, MessageProducer, connectedAdmins);
     // VendorHandler(socket, MessageProducer, connectedAdmins);
-    // NotificationHandler(socket, MessageProducer, connectedAdmins);
+    NotificationHandler(socket, MessageProducer, connectedAdmins);
     // OrderHandler(socket, MessageProducer, connectedAdmins);
     // ContentHandler(socket, MessageProducer, connectedAdmins);
     HeaderHandler(socket, MessageProducer, connectedAdmins);

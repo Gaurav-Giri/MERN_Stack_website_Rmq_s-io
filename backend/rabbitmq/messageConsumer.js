@@ -240,21 +240,21 @@ class MessageConsumer {
       const channel = await rabbitMQ.getChannel();
       
       // Declare remaining exchanges (excluding USER, SCHOOL, MEAL)
-      await channel.assertExchange(EXCHANGES.NOTIFICATION, 'fanout', { durable: true });
+
       await channel.assertExchange(EXCHANGES.ADMIN, 'fanout', { durable: true });
       await channel.assertExchange(EXCHANGES.VENDOR, 'fanout', { durable: true });
       await channel.assertExchange(EXCHANGES.ORDER, 'fanout', { durable: true });
       await channel.assertExchange(EXCHANGES.CONTENT, 'fanout', { durable: true });
       
       // Declare remaining queues (excluding USER_EVENTS, SCHOOL_EVENTS, MEAL_EVENTS)
-      await channel.assertQueue(QUEUES.NOTIFICATION_EVENTS, { durable: true });
+
       await channel.assertQueue(QUEUES.ADMIN_EVENTS, { durable: true });
       await channel.assertQueue(QUEUES.VENDOR_EVENTS, { durable: true });
       await channel.assertQueue(QUEUES.ORDER_EVENTS, { durable: true });
       await channel.assertQueue(QUEUES.CONTENT_EVENTS, { durable: true });
       
       // Bind queues to exchanges
-      await channel.bindQueue(QUEUES.NOTIFICATION_EVENTS, EXCHANGES.NOTIFICATION, '');
+
       await channel.bindQueue(QUEUES.ADMIN_EVENTS, EXCHANGES.NOTIFICATION, '');
       await channel.bindQueue(QUEUES.VENDOR_EVENTS, EXCHANGES.NOTIFICATION, '');
       await channel.bindQueue(QUEUES.ORDER_EVENTS, EXCHANGES.NOTIFICATION, '');
@@ -269,9 +269,9 @@ class MessageConsumer {
     const channel = await rabbitMQ.getChannel();
     
     // Consume from remaining queues
-    channel.consume(QUEUES.NOTIFICATION_EVENTS, (msg) => {
-      this.handleMessage(msg, 'NOTIFICATION');
-    }, { noAck: false });
+    // channel.consume(QUEUES.NOTIFICATION_EVENTS, (msg) => {
+    //   this.handleMessage(msg, 'NOTIFICATION');
+    // }, { noAck: false });
 
     channel.consume(QUEUES.ADMIN_EVENTS, (msg) => {
       this.handleMessage(msg, 'ADMIN');
@@ -315,9 +315,9 @@ class MessageConsumer {
 
     // Handle remaining domains here
     switch (domain) {
-      case 'NOTIFICATION':
-        this.handleNotificationEvent(event, data, socketId);
-        break;
+      // case 'NOTIFICATION':
+      //   this.handleNotificationEvent(event, data, socketId);
+      //   break;
       case 'ADMIN':
         this.handleAdminEvent(event, data, socketId);
         break;
@@ -335,10 +335,10 @@ class MessageConsumer {
     }
   }
 
-  handleNotificationEvent(event, data, socketId) {
-    // TODO: Implement notification event handling
-    console.log('Notification event:', event, data);
-  }
+  // handleNotificationEvent(event, data, socketId) {
+  //   // TODO: Implement notification event handling
+  //   console.log('Notification event:', event, data);
+  // }
 
   handleAdminEvent(event, data, socketId) {
     // TODO: Implement admin event handling
