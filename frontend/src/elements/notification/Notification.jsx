@@ -116,7 +116,228 @@
 
 
 
+
 // Updated Notification.js component using the API
+
+
+// import React, { useState, useEffect } from 'react';
+// import styles from './Notification.module.css';
+// import { useThemeTrigger } from '../../ThemeTrigger'; // adjust path
+// import { 
+//   getUserNotifications, 
+//   markAsRead, 
+//   markAllAsRead,
+//   getUnreadCount 
+// } from '../../Api/NotificationApi'; // adjust path
+
+// const Notification = ({ userId }) => {
+//   const { darkMode } = useThemeTrigger();
+//   const [notifications, setNotifications] = useState([]);
+//   const [showDropdown, setShowDropdown] = useState(false);
+//   const [loading, setLoading] = useState(false);
+//   const [unreadCount, setUnreadCount] = useState(0);
+
+//   // Fetch notifications and unread count
+//   const fetchNotifications = async () => {
+//     if (!userId) return;
+    
+//     try {
+//       setLoading(true);
+//       const [notificationsResponse, unreadCountResponse] = await Promise.all([
+//         getUserNotifications(userId, 1, 10), // Get first 10 notifications
+//         getUnreadCount(userId)
+//       ]);
+      
+//       setNotifications(notificationsResponse.data || []);
+//       setUnreadCount(unreadCountResponse);
+//     } catch (error) {
+//       console.error('Failed to fetch notifications:', error);
+//       // Fallback to empty state
+//       setNotifications([]);
+//       setUnreadCount(0);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     if (userId) {
+//       fetchNotifications();
+//     }
+//   }, [userId]);
+
+//   const toggleDropdown = async () => {
+//     if (!showDropdown && userId) {
+//       await fetchNotifications();
+//     }
+//     setShowDropdown(!showDropdown);
+//   };
+
+//   const closeDropdown = () => setShowDropdown(false);
+
+//   const handleMarkAsRead = async (notificationId) => {
+//     try {
+//       await markAsRead(notificationId);
+//       setNotifications(prev => 
+//         prev.map(n => n._id === notificationId ? { ...n, read: true } : n)
+//       );
+//       setUnreadCount(prev => Math.max(0, prev - 1));
+//     } catch (error) {
+//       console.error('Failed to mark notification as read:', error);
+//     }
+//   };
+
+//   const handleMarkAllAsRead = async () => {
+//     try {
+//       await markAllAsRead(userId);
+//       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+//       setUnreadCount(0);
+//     } catch (error) {
+//       console.error('Failed to mark all notifications as read:', error);
+//     }
+//   };
+
+//   const formatTime = (createdAt) => {
+//     if (!createdAt) return 'Recently';
+    
+//     const now = new Date();
+//     const created = new Date(createdAt);
+//     const diffInMinutes = Math.floor((now - created) / (1000 * 60));
+//     const diffInHours = Math.floor(diffInMinutes / 60);
+//     const diffInDays = Math.floor(diffInHours / 24);
+
+//     if (diffInMinutes < 1) return 'Just now';
+//     if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+//     if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+//     if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    
+//     return created.toLocaleDateString();
+//   };
+
+//   const getPriorityIcon = (priority) => {
+//     switch (priority) {
+//       case 'high': return '🔴';
+//       case 'medium': return '🟡';
+//       case 'low': return '🟢';
+//       default: return '⚪';
+//     }
+//   };
+
+//   return (
+//     <div className={`${styles.notificationContainer} ${darkMode ? styles.dark : styles.light}`}>
+//       <button 
+//         className={styles.notificationBell}
+//         onClick={toggleDropdown}
+//         aria-label="Notifications"
+//         disabled={!userId}
+//       >
+//         <span className={styles.bellIcon}>🔔</span>
+//         {unreadCount > 0 && (
+//           <span className={styles.notificationBadge}>
+//             {unreadCount > 9 ? '9+' : unreadCount}
+//           </span>
+//         )}
+//       </button>
+
+//       {showDropdown && (
+//         <>
+//           <div className={styles.notificationBackdrop} onClick={closeDropdown} />
+//           <div className={styles.notificationDropdown}>
+//             <div className={styles.dropdownHeader}>
+//               <h3>Notifications</h3>
+//               <div className={styles.headerActions}>
+//                 {unreadCount > 0 && (
+//                   <button 
+//                     className={styles.markAllRead}
+//                     onClick={handleMarkAllAsRead}
+//                     disabled={loading}
+//                   >
+//                     Mark all read
+//                   </button>
+//                 )}
+//                 <button 
+//                   className={styles.closeButton}
+//                   onClick={closeDropdown}
+//                   aria-label="Close notifications"
+//                 >
+//                   ✕
+//                 </button>
+//               </div>
+//             </div>
+
+//             {loading ? (
+//               <div className={styles.loadingState}>
+//                 <p>Loading notifications...</p>
+//               </div>
+//             ) : !userId ? (
+//               <div className={styles.errorState}>
+//                 <p>Please log in to view notifications</p>
+//               </div>
+//             ) : notifications.length === 0 ? (
+//               <p className={styles.noNotifications}>No notifications yet</p>
+//             ) : (
+//               <div className={styles.notificationList}>
+//                 {notifications.map(notification => (
+//                   <div
+//                     key={notification._id}
+//                     className={`${styles.notificationItem} ${
+//                       !notification.read ? styles.unread : ''
+//                     } ${styles[`priority-${notification.priority}`]}`}
+//                     onClick={() => !notification.read && handleMarkAsRead(notification._id)}
+//                   >
+//                     <div className={styles.notificationContent}>
+//                       <div className={styles.notificationHeader}>
+//                         <span className={styles.priorityIcon}>
+//                           {getPriorityIcon(notification.priority)}
+//                         </span>
+//                         <span className={styles.notificationType}>
+//                           {notification.type}
+//                         </span>
+//                       </div>
+//                       <p className={styles.notificationMessage}>
+//                         {notification.message}
+//                       </p>
+//                       <div className={styles.notificationFooter}>
+//                         <span className={styles.notificationTime}>
+//                           {formatTime(notification.createdAt)}
+//                         </span>
+//                         {!notification.read && (
+//                           <div className={styles.unreadIndicator}>
+//                             <span className={styles.unreadDot}></span>
+//                             <span className={styles.unreadText}>Unread</span>
+//                           </div>
+//                         )}
+//                       </div>
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+//             )}
+//           </div>
+//         </>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default Notification;
+
+
+
+
+
+
+
+
+
+
+
+
+
+// -------------------------------------notification that responses to sample notification button----------------------------------------
+
+
+
 import React, { useState, useEffect } from 'react';
 import styles from './Notification.module.css';
 import { useThemeTrigger } from '../../ThemeTrigger'; // adjust path
@@ -126,30 +347,35 @@ import {
   markAllAsRead,
   getUnreadCount 
 } from '../../Api/NotificationApi'; // adjust path
+import { useSocket } from '../../SocketContext';
+import { useAuth } from '../../AuthContext';
 
-const Notification = ({ userId }) => {
+const Notification = () => {
   const { darkMode } = useThemeTrigger();
+  const { user } = useAuth();
+  const socket = useSocket();
+
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Fetch notifications and unread count
+  const userId = user?._id;
+
+  // Fetch notifications & unread count
   const fetchNotifications = async () => {
     if (!userId) return;
-    
     try {
       setLoading(true);
       const [notificationsResponse, unreadCountResponse] = await Promise.all([
-        getUserNotifications(userId, 1, 10), // Get first 10 notifications
+        getUserNotifications(userId, 1, 10),
         getUnreadCount(userId)
       ]);
-      
+
       setNotifications(notificationsResponse.data || []);
-      setUnreadCount(unreadCountResponse);
+      setUnreadCount(unreadCountResponse || 0);
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
-      // Fallback to empty state
       setNotifications([]);
       setUnreadCount(0);
     } finally {
@@ -157,11 +383,29 @@ const Notification = ({ userId }) => {
     }
   };
 
+  // Initial fetch
   useEffect(() => {
-    if (userId) {
-      fetchNotifications();
-    }
+    if (userId) fetchNotifications();
   }, [userId]);
+
+  // Listen to Socket.io events
+  useEffect(() => {
+    if (!socket || !userId) return;
+
+    const handleNewNotification = (data) => {
+      // Only add notification if it belongs to the current user
+      if (data.notification.user === userId || data.notification.user._id === userId) {
+        setNotifications(prev => [data.notification, ...prev]);
+        setUnreadCount(prev => prev + 1);
+      }
+    };
+
+    socket.on('notification_created', handleNewNotification);
+
+    return () => {
+      socket.off('notification_created', handleNewNotification);
+    };
+  }, [socket, userId]);
 
   const toggleDropdown = async () => {
     if (!showDropdown && userId) {
@@ -175,7 +419,7 @@ const Notification = ({ userId }) => {
   const handleMarkAsRead = async (notificationId) => {
     try {
       await markAsRead(notificationId);
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(n => n._id === notificationId ? { ...n, read: true } : n)
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
@@ -196,7 +440,6 @@ const Notification = ({ userId }) => {
 
   const formatTime = (createdAt) => {
     if (!createdAt) return 'Recently';
-    
     const now = new Date();
     const created = new Date(createdAt);
     const diffInMinutes = Math.floor((now - created) / (1000 * 60));
@@ -207,7 +450,6 @@ const Notification = ({ userId }) => {
     if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
     if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
     if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-    
     return created.toLocaleDateString();
   };
 
@@ -222,7 +464,7 @@ const Notification = ({ userId }) => {
 
   return (
     <div className={`${styles.notificationContainer} ${darkMode ? styles.dark : styles.light}`}>
-      <button 
+      <button
         className={styles.notificationBell}
         onClick={toggleDropdown}
         aria-label="Notifications"
@@ -244,7 +486,7 @@ const Notification = ({ userId }) => {
               <h3>Notifications</h3>
               <div className={styles.headerActions}>
                 {unreadCount > 0 && (
-                  <button 
+                  <button
                     className={styles.markAllRead}
                     onClick={handleMarkAllAsRead}
                     disabled={loading}
@@ -252,7 +494,7 @@ const Notification = ({ userId }) => {
                     Mark all read
                   </button>
                 )}
-                <button 
+                <button
                   className={styles.closeButton}
                   onClick={closeDropdown}
                   aria-label="Close notifications"
@@ -318,3 +560,231 @@ const Notification = ({ userId }) => {
 };
 
 export default Notification;
+
+
+
+
+// ---------------------------------------------------------------------------------------------------------------
+
+
+
+
+// import React, { useState, useEffect } from 'react';
+// import styles from './Notification.module.css';
+// import { useThemeTrigger } from '../../ThemeTrigger';
+// import { 
+//   getUserNotifications, 
+//   markAsRead, 
+//   markAllAsRead,
+//   getUnreadCount 
+// } from '../../Api/NotificationApi';
+// import { useSocket } from '../../SocketContext';
+// import { useAuth } from '../../AuthContext';
+
+// const Notification = () => {
+//   const { darkMode } = useThemeTrigger();
+//   const { user } = useAuth();
+//   const socket = useSocket();
+
+//   const [notifications, setNotifications] = useState([]);
+//   const [showDropdown, setShowDropdown] = useState(false);
+//   const [loading, setLoading] = useState(false);
+//   const [unreadCount, setUnreadCount] = useState(0);
+
+//   const userId = user?._id;
+
+//   // Fetch notifications & unread count
+//   const fetchNotifications = async () => {
+//     if (!userId) return;
+//     try {
+//       setLoading(true);
+//       const [notificationsResponse, unreadCountResponse] = await Promise.all([
+//         getUserNotifications(userId, 1, 10),
+//         getUnreadCount(userId)
+//       ]);
+//       setNotifications(notificationsResponse.data || []);
+//       setUnreadCount(unreadCountResponse || 0);
+//     } catch (error) {
+//       console.error('Failed to fetch notifications:', error);
+//       setNotifications([]);
+//       setUnreadCount(0);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Initial fetch
+//   useEffect(() => {
+//     if (userId) fetchNotifications();
+//   }, [userId]);
+
+//   // Listen to socket events
+//   useEffect(() => {
+//     if (!socket || !userId) return;
+
+//     const handleNewNotification = (data) => {
+//       const notifUserId = data.notification.user?._id || data.notification.user;
+//       if (notifUserId === userId) {
+//         setNotifications(prev => [data.notification, ...prev]);
+//         setUnreadCount(prev => prev + 1);
+//       }
+//     };
+
+//     socket.on('notification_created', handleNewNotification);
+
+//     return () => {
+//       socket.off('notification_created', handleNewNotification);
+//     };
+//   }, [socket, userId]);
+
+//   const toggleDropdown = async () => {
+//     if (!showDropdown && userId) await fetchNotifications();
+//     setShowDropdown(!showDropdown);
+//   };
+
+//   const closeDropdown = () => setShowDropdown(false);
+
+//   const handleMarkAsRead = async (notificationId) => {
+//     try {
+//       await markAsRead(notificationId);
+//       setNotifications(prev =>
+//         prev.map(n => n._id === notificationId ? { ...n, read: true } : n)
+//       );
+//       setUnreadCount(prev => Math.max(0, prev - 1));
+//     } catch (error) {
+//       console.error('Failed to mark notification as read:', error);
+//     }
+//   };
+
+//   const handleMarkAllAsRead = async () => {
+//     try {
+//       await markAllAsRead(userId);
+//       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+//       setUnreadCount(0);
+//     } catch (error) {
+//       console.error('Failed to mark all notifications as read:', error);
+//     }
+//   };
+
+//   const formatTime = (createdAt) => {
+//     if (!createdAt) return 'Recently';
+//     const now = new Date();
+//     const created = new Date(createdAt);
+//     const diffInMinutes = Math.floor((now - created) / (1000 * 60));
+//     const diffInHours = Math.floor(diffInMinutes / 60);
+//     const diffInDays = Math.floor(diffInHours / 24);
+
+//     if (diffInMinutes < 1) return 'Just now';
+//     if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+//     if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+//     if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+//     return created.toLocaleDateString();
+//   };
+
+//   const getPriorityIcon = (priority) => {
+//     switch (priority) {
+//       case 'high': return '🔴';
+//       case 'medium': return '🟡';
+//       case 'low': return '🟢';
+//       default: return '⚪';
+//     }
+//   };
+
+//   return (
+//     <div className={`${styles.notificationContainer} ${darkMode ? styles.dark : styles.light}`}>
+//       <button
+//         className={styles.notificationBell}
+//         onClick={toggleDropdown}
+//         aria-label="Notifications"
+//         disabled={!userId}
+//       >
+//         <span className={styles.bellIcon}>🔔</span>
+//         {unreadCount > 0 && (
+//           <span className={styles.notificationBadge}>
+//             {unreadCount > 9 ? '9+' : unreadCount}
+//           </span>
+//         )}
+//       </button>
+
+//       {showDropdown && (
+//         <>
+//           <div className={styles.notificationBackdrop} onClick={closeDropdown} />
+//           <div className={styles.notificationDropdown}>
+//             <div className={styles.dropdownHeader}>
+//               <h3>Notifications</h3>
+//               <div className={styles.headerActions}>
+//                 {unreadCount > 0 && (
+//                   <button
+//                     className={styles.markAllRead}
+//                     onClick={handleMarkAllAsRead}
+//                     disabled={loading}
+//                   >
+//                     Mark all read
+//                   </button>
+//                 )}
+//                 <button
+//                   className={styles.closeButton}
+//                   onClick={closeDropdown}
+//                   aria-label="Close notifications"
+//                 >
+//                   ✕
+//                 </button>
+//               </div>
+//             </div>
+
+//             {loading ? (
+//               <div className={styles.loadingState}>
+//                 <p>Loading notifications...</p>
+//               </div>
+//             ) : !userId ? (
+//               <div className={styles.errorState}>
+//                 <p>Please log in to view notifications</p>
+//               </div>
+//             ) : notifications.length === 0 ? (
+//               <p className={styles.noNotifications}>No notifications yet</p>
+//             ) : (
+//               <div className={styles.notificationList}>
+//                 {notifications.map(notification => (
+//                   <div
+//                     key={notification._id}
+//                     className={`${styles.notificationItem} ${
+//                       !notification.read ? styles.unread : ''
+//                     } ${styles[`priority-${notification.priority}`]}`}
+//                     onClick={() => !notification.read && handleMarkAsRead(notification._id)}
+//                   >
+//                     <div className={styles.notificationContent}>
+//                       <div className={styles.notificationHeader}>
+//                         <span className={styles.priorityIcon}>
+//                           {getPriorityIcon(notification.priority)}
+//                         </span>
+//                         <span className={styles.notificationType}>
+//                           {notification.type}
+//                         </span>
+//                       </div>
+//                       <p className={styles.notificationMessage}>
+//                         {notification.message}
+//                       </p>
+//                       <div className={styles.notificationFooter}>
+//                         <span className={styles.notificationTime}>
+//                           {formatTime(notification.createdAt)}
+//                         </span>
+//                         {!notification.read && (
+//                           <div className={styles.unreadIndicator}>
+//                             <span className={styles.unreadDot}></span>
+//                             <span className={styles.unreadText}>Unread</span>
+//                           </div>
+//                         )}
+//                       </div>
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+//             )}
+//           </div>
+//         </>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default Notification;

@@ -131,6 +131,35 @@ const sampleNotifications = [
     read: false
   }
 ];
+// Add this function to your SeedNotification.js
+const sendWelcomeNotificationToAllUsers = async () => {
+  try {
+    const users = await User.find().select('_id name email');
+    
+    if (users.length === 0) {
+      console.log('❌ No users found for welcome notification');
+      return;
+    }
+
+    const welcomeNotifications = users.map(user => ({
+      user: user._id,
+      message: "🔔 Notification service is working! Welcome to School Lunch Box",
+      type: "system",
+      priority: "low",
+      read: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }));
+
+    await Notification.insertMany(welcomeNotifications);
+    console.log(`✅ Sent welcome notification to ${users.length} users`);
+    
+  } catch (error) {
+    console.error('❌ Error sending welcome notifications:', error);
+  }
+};
+
+// Call it in your seedDatabase function
 
 const seedDatabase = async () => {
   try {
@@ -138,7 +167,7 @@ const seedDatabase = async () => {
     
     await mongoose.connect(process.env.MONGO_URI);
     console.log('✅ Connected to MongoDB');
-    
+    await sendWelcomeNotificationToAllUsers();
     // Get some sample users to assign notifications to
     const users = await User.find().limit(5).select('_id name email');
     

@@ -174,4 +174,4 @@ class NotificationConsumer {
   }
 }
 
-export default NotificationConsumer;
+export default NotificationConsumer;  

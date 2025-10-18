@@ -137,9 +137,10 @@
 // export default HomePage;
 
 
-
+// --------------------------------------------------------------------------------------------------------------------------
 // HomePage.jsx
 import React, { useState, useEffect } from 'react';
+import TestNotificationButton from "../../elements/TestNotificationButton/TestNotificationButton.jsx";
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../AuthContext'; // Import auth context
 import CarouselBanner from '../../elements/CarouselSlider/CarouselSlider';
@@ -224,6 +225,10 @@ const HomePage = () => {
           </div>
         </section>
 
+        <section>
+            <TestNotificationButton/>
+
+        </section>
         {/* <section className={styles.schoolSearchSection}>
           <div className={styles.container}>
             <h2>Find Your School</h2>
